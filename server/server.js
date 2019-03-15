@@ -1,9 +1,25 @@
 'use strict';
+require('cls-hooked');
 
 var loopback = require('loopback');
 var boot = require('loopback-boot');
+var loopbackContext = require('loopback-context');
 
 var app = module.exports = loopback();
+
+// user context
+app.use(loopback.token());
+app.use(function (req, res, next) {
+  if (!req.accessToken) return next();
+  app.models.UserFull.findById(req.accessToken.userId, function(err, user) {
+    if (err) return next(err);
+    if (!user) return next(new Error('No user with this access token was found.'));
+    res.locals.currentUser = user;
+    var loopbackCtx = loopbackContext.getCurrentContext();
+    if (loopbackCtx) loopbackCtx.set('currentUser', user);
+    next();
+  });
+});
 
 app.start = function() {
   // start the web server

@@ -10,6 +10,11 @@
     "isApproved"
   ],
   "properties": {
+    "originalId": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
     "isApproved": {
       "type": "number",
       "required": true,
