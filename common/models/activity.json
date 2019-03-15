@@ -6,7 +6,15 @@
   "options": {
     "validateUpsert": true
   },
+  "hidden": [
+    "isApproved"
+  ],
   "properties": {
+    "isApproved": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
     "timestampCreated": {
       "type": "date",
       "required": true,
@@ -56,6 +64,14 @@
       "type": "belongsTo",
       "model": "UserFull",
       "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "activityType": {
+      "type": "belongsTo",
+      "model": "ActivityType",
+      "foreignKey": "activityTypeId",
       "options": {
         "nestRemoting": true
       }

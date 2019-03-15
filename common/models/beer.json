@@ -6,6 +6,9 @@
   "options": {
     "validateUpsert": true
   },
+  "hidden": [
+    "isApproved"
+  ],
   "properties": {
     "name": {
       "type": "string",
@@ -62,6 +65,11 @@
       "required": false,
       "default": 0
     },
+    "isApproved": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
     "timestampCreated": {
       "type": "date",
       "required": true,
@@ -113,6 +121,15 @@
     "editors": {
       "type": "hasMany",
       "model": "UserFull",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    },
+    "activityTypes": {
+      "type": "hasMany",
+      "model": "ActivityType",
       "foreignKey": "beerId",
       "options": {
         "nestRemoting": true

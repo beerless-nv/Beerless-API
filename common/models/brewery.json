@@ -6,6 +6,9 @@
   "options": {
     "validateUpsert": true
   },
+  "hidden": [
+    "isApproved"
+  ],
   "properties": {
     "name": {
       "type": "string",
@@ -40,8 +43,9 @@
       "type": "string",
       "default": "null"
     },
-    "beerAmount": {
+    "isApproved": {
       "type": "number",
+      "required": true,
       "default": 0
     },
     "timestampCreated": {
@@ -77,6 +81,15 @@
     "editors": {
       "type": "hasMany",
       "model": "UserFull",
+      "foreignKey": "breweryId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    },
+    "activityTypes": {
+      "type": "hasMany",
+      "model": "ActivityType",
       "foreignKey": "breweryId",
       "options": {
         "nestRemoting": true

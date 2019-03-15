@@ -29,7 +29,43 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "activities": {
+      "type": "hasMany",
+      "model": "Activity",
+      "foreignKey": "activityTypeId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "beers": {
+      "type": "hasMany",
+      "model": "Beer",
+      "foreignKey": "activityTypeId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    },
+    "articles": {
+      "type": "hasMany",
+      "model": "Article",
+      "foreignKey": "activityTypeId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    },
+    "breweries": {
+      "type": "hasMany",
+      "model": "Brewery",
+      "foreignKey": "activityTypeId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    }
+  },
   "acls": [],
   "methods": {}
 }
