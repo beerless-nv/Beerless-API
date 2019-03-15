@@ -1,0 +1,48 @@
+{
+  "name": "UserSocial",
+  "plural": "userSocials",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "socialId": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "socialPlatform": {
+      "type": "string",
+      "required": true,
+      "default": "null"
+    },
+    "picture": {
+      "type": "string",
+      "default": "null"
+    },
+    "timestampCreated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "userFull": {
+      "type": "belongsTo",
+      "model": "UserFull",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

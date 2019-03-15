@@ -1,0 +1,53 @@
+{
+  "name": "StyleTag",
+  "plural": "styleTags",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "default": "null"
+    },
+    "description": {
+      "type": "string",
+      "required": false,
+      "default": "null"
+    },
+    "timestampCreated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "styleTagCategory": {
+      "type": "belongsTo",
+      "model": "StyleTagCategory",
+      "foreignKey": "styleTagCategoryID",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "beers": {
+      "type": "hasMany",
+      "model": "Beer",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Beerstyle"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

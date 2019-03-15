@@ -1,0 +1,66 @@
+{
+  "name": "Activity",
+  "plural": "activities",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "timestampCreated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "beer": {
+      "type": "belongsTo",
+      "model": "Beer",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "user": {
+      "type": "belongsTo",
+      "model": "UserFull",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "article": {
+      "type": "belongsTo",
+      "model": "Article",
+      "foreignKey": "articleId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "brewery": {
+      "type": "belongsTo",
+      "model": "Brewery",
+      "foreignKey": "breweryId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "userFull": {
+      "type": "belongsTo",
+      "model": "UserFull",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

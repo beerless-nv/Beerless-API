@@ -1,0 +1,107 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models"
+    ],
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../common/mixins",
+      "./mixins"
+    ]
+  },
+  "User": {
+    "dataSource": "mysql-beerless",
+    "public": false
+  },
+  "AccessToken": {
+    "dataSource": "mysql-beerless",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "mysql-beerless",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "mysql-beerless",
+    "public": false,
+    "options": {
+      "strictObjectIDCoercion": true
+    }
+  },
+  "Role": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Beer": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "StyleTagCategory": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "StyleTag": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Beerstyle": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Tastingprofile": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "BeerFromBrewery": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Brewery": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Contact": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Activity": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "ActivityType": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Article": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "ArticleTag": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Tag": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Relationship": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "Status": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "UserSocial": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "UserFull": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  }
+}

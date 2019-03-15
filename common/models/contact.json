@@ -1,0 +1,48 @@
+{
+  "name": "Contact",
+  "plural": "contacts",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "website": {
+      "type": "string",
+      "default": "null"
+    },
+    "twitter": {
+      "type": "string",
+      "default": "null"
+    },
+    "facebook": {
+      "type": "string",
+      "default": "null"
+    },
+    "instagram": {
+      "type": "string",
+      "default": "null"
+    },
+    "timestampCreated": {
+      "type": "date",
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "brewery": {
+      "type": "hasOne",
+      "model": "Brewery",
+      "foreignKey": "contactId",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

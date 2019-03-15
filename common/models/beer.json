@@ -1,0 +1,125 @@
+{
+  "name": "Beer",
+  "plural": "beers",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "default": "null"
+    },
+    "ABV": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "IBU": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
+    "EBC": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
+    "temperature": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
+    "fermentation": {
+      "type": "string",
+      "required": false,
+      "default": "null"
+    },
+    "glass": {
+      "type": "string",
+      "required": false,
+      "default": "null"
+    },
+    "logo": {
+      "type": "string",
+      "required": false,
+      "default": "null"
+    },
+    "description": {
+      "type": "string",
+      "required": false,
+      "default": "null"
+    },
+    "season": {
+      "type": "string",
+      "required": false,
+      "default": "null"
+    },
+    "since": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
+    "timestampCreated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "styleTags": {
+      "type": "hasMany",
+      "model": "StyleTag",
+      "foreignKey": "beerId",
+      "keyThrough": "styleTagId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Beerstyle"
+    },
+    "tastingprofiles": {
+      "type": "hasMany",
+      "model": "Tastingprofile",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "breweries": {
+      "type": "hasMany",
+      "model": "Brewery",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "BeerFromBrewery"
+    },
+    "users": {
+      "type": "hasMany",
+      "model": "UserFull",
+      "foreignKey": "favouriteBeerId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "editors": {
+      "type": "hasMany",
+      "model": "UserFull",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

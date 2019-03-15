@@ -1,0 +1,66 @@
+{
+  "name": "Article",
+  "plural": "articles",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "default": "null"
+    },
+    "slug": {
+      "type": "string",
+      "required": true,
+      "default": "null"
+    },
+    "picture": {
+      "type": "string",
+      "default": "null"
+    },
+    "intro": {
+      "type": "string",
+      "default": "null"
+    },
+    "content": {
+      "type": "string",
+      "default": "null"
+    },
+    "timestampCreated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "tags": {
+      "type": "hasMany",
+      "model": "Tag",
+      "foreignKey": "articleId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "ArticleTag"
+    },
+    "editors": {
+      "type": "hasMany",
+      "model": "UserFull",
+      "foreignKey": "articleId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

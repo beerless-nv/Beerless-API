@@ -1,0 +1,147 @@
+{
+  "name": "UserFull",
+  "plural": "users",
+  "base": "User",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "hidden": [],
+  "properties": {
+    "emailVerified": {
+      "type": "number",
+      "default": 0
+    },
+    "realm": false,
+    "firstName": {
+      "type": "string",
+      "default": "null"
+    },
+    "lastName": {
+      "type": "string",
+      "default": "null"
+    },
+    "picture": {
+      "type": "string",
+      "default": "null"
+    },
+    "bio": {
+      "type": "string",
+      "default": "null"
+    },
+    "country": {
+      "type": "string",
+      "default": "null"
+    },
+    "province": {
+      "type": "string",
+      "default": "null"
+    },
+    "place": {
+      "type": "string",
+      "default": "null"
+    },
+    "totalPoints": {
+      "type": "number",
+      "default": 0
+    },
+    "timestampCreated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "userSocials": {
+      "type": "hasMany",
+      "model": "UserSocial",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "relationship_user1": {
+      "type": "hasMany",
+      "model": "Relationship",
+      "foreignKey": "user1Id",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "relationship_user2": {
+      "type": "hasMany",
+      "model": "Relationship",
+      "foreignKey": "user2Id",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "relationship_actionUser": {
+      "type": "hasMany",
+      "model": "Relationship",
+      "foreignKey": "actionUserId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "favouriteBeer": {
+      "type": "belongsTo",
+      "model": "Beer",
+      "foreignKey": "favouriteBeerId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "beerActivity": {
+      "type": "hasMany",
+      "model": "Beer",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    },
+    "articleActivity": {
+      "type": "hasMany",
+      "model": "Article",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    },
+    "breweryActivity": {
+      "type": "hasMany",
+      "model": "Brewery",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    },
+    "tastingprofiles": {
+      "type": "hasMany",
+      "model": "Tastingprofile",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "requests": {
+      "type": "hasMany",
+      "model": "Request",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

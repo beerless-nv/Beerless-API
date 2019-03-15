@@ -1,0 +1,58 @@
+{
+  "name": "Relationship",
+  "plural": "relationships",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "timestampCreated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "status": {
+      "type": "belongsTo",
+      "model": "Status",
+      "foreignKey": "statusId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "user1": {
+      "type": "belongsTo",
+      "model": "UserFull",
+      "foreignKey": "user1Id",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "user2": {
+      "type": "belongsTo",
+      "model": "UserFull",
+      "foreignKey": "user2Id",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "actionUser": {
+      "type": "belongsTo",
+      "model": "UserFull",
+      "foreignKey": "actionUserId",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

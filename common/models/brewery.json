@@ -1,0 +1,89 @@
+{
+  "name": "Brewery",
+  "plural": "breweries",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "default": "null"
+    },
+    "description": {
+      "type": "string",
+      "default": "null"
+    },
+    "country": {
+      "type": "string",
+      "default": "null"
+    },
+    "province": {
+      "type": "string",
+      "default": "null"
+    },
+    "place": {
+      "type": "string",
+      "default": "null"
+    },
+    "postcode": {
+      "type": "string",
+      "default": "null"
+    },
+    "streetAndNumber": {
+      "type": "string",
+      "default": "null"
+    },
+    "logo": {
+      "type": "string",
+      "default": "null"
+    },
+    "beerAmount": {
+      "type": "number",
+      "default": 0
+    },
+    "timestampCreated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    },
+    "timestampUpdated": {
+      "type": "date",
+      "required": true,
+      "default": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "beers": {
+      "type": "hasMany",
+      "model": "Beer",
+      "foreignKey": "breweryId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "BeerFromBrewery"
+    },
+    "contact": {
+      "type": "hasOne",
+      "model": "Contact",
+      "foreignKey": "breweryId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "editors": {
+      "type": "hasMany",
+      "model": "UserFull",
+      "foreignKey": "breweryId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "Activity"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
