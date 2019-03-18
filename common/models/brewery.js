@@ -37,7 +37,7 @@ module.exports = function(Brewery) {
 
       Brewery.app.models.Activity.create(activity);
 
-      return brewery.id;
+      return brewery;
     }
   };
 

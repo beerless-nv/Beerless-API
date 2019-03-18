@@ -12,8 +12,10 @@ module.exports = function(Beer) {
       const userId = (ctx && ctx.get('currentUser')).id;
 
       // define activityType
+      let beerId = data['id'];
       let activityTypeId = 1;
       if (data['id']) {
+        data['id'] = null;
         activityTypeId = 2;
       }
 
@@ -24,17 +26,18 @@ module.exports = function(Beer) {
       const activity = {
         'timestampCreated': '1970-01-01T00:00:00.000Z',
         'timestampUpdated': '1970-01-01T00:00:00.000Z',
-        'beerId': beer.id,
         'breweryId': 0,
+        'beerId': beer.id,
         'articleId': 0,
         'userId': userId,
         'activityTypeId': activityTypeId,
+        'originalId': beerId,
         'isApproved': 0,
       };
 
       Beer.app.models.Activity.create(activity);
 
-      return beer.id;
+      return beer;
     }
   };
 
