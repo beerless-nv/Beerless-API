@@ -102,6 +102,9 @@
   },
   "UserFull": {
     "dataSource": "mysql-beerless",
-    "public": true
+    "public": true,
+    "options": {
+      "allowEternalTokens": true
+    }
   }
 }
