@@ -1,0 +1,12 @@
+{
+  "mysql-beerless": {
+    "host": "beerless.be",
+    "port": 3306,
+    "url": "",
+    "database": "beerle1q_beerless_platform",
+    "password": "sselreeB1998",
+    "name": "mysql-beerless",
+    "user": "beerle1q",
+    "connector": "mysql"
+  }
+}
