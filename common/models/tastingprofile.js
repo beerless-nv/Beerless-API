@@ -15,7 +15,7 @@ module.exports = function(Tastingprofile) {
 
   Tastingprofile.getAllAverages = async function() {
     // create sql query
-    const query = "SELECT ID, AVG(malty) AS malty, AVG(sweet) AS sweet, AVG(sour) AS sour, AVG(hoppy) AS hoppy, AVG(bitter) AS bitter, AVG(fruity) AS fruity, beerID FROM Tastingprofile GROUP BY beerID";
+    const query = "SELECT ID, AVG(malty) AS malty, AVG(sweet) AS sweet, AVG(sour) AS sour, AVG(hoppy) AS hoppy, AVG(bitter) AS bitter, AVG(fruity) AS fruity, beerID AS beerId FROM Tastingprofile GROUP BY beerID";
 
     // define datasource
     const ds = Tastingprofile.dataSource;
@@ -50,7 +50,7 @@ module.exports = function(Tastingprofile) {
     const beerId = id;
 
     // create sql query
-    const query = "SELECT ID, AVG(malty) AS malty, AVG(sweet) AS sweet, AVG(sour) AS sour, AVG(hoppy) AS hoppy, AVG(bitter) AS bitter, AVG(fruity) AS fruity, beerID FROM Tastingprofile WHERE beerID = ?";
+    const query = "SELECT ID, AVG(malty) AS malty, AVG(sweet) AS sweet, AVG(sour) AS sour, AVG(hoppy) AS hoppy, AVG(bitter) AS bitter, AVG(fruity) AS fruity, beerID AS beerId FROM Tastingprofile WHERE beerID = ?";
 
     // define datasource
     const ds = Tastingprofile.dataSource;
