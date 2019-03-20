@@ -11,6 +11,7 @@
     "posttest": "npm run lint"
   },
   "dependencies": {
+    "child_process": "^1.0.2",
     "cls-hooked": "^4.2.2",
     "compression": "^1.0.3",
     "cors": "^2.5.2",
@@ -21,6 +22,7 @@
     "loopback-component-explorer": "^6.2.0",
     "loopback-connector-mysql": "^5.3.1",
     "loopback-context": "^3.4.0",
+    "python-shell": "^1.0.7",
     "serve-favicon": "^2.0.1",
     "strong-error-handler": "^3.0.0"
   },

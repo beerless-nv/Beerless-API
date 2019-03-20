@@ -48,7 +48,47 @@ module.exports = function(Beer) {
       http: {source: 'body'},
       required: true,
     },
-    returns: {type: 'object', root: true},
     http: {path: '/beerEntry', verb: 'post'},
+    returns: {type: 'object', root: true},
+  });
+
+  Beer.itemBasedRecommendation = async function(beerId, amount, res) {
+    console.log('beerId', beerId);
+    console.log('amount', amount);
+
+    // const spawn = require('child_process').spawn;
+    // const process = spawn('python', ['./../../extra_scripts/UseModel.py', beerId, amount]);
+    //
+    // process.stdout.on('data', function(data) {
+    //   res.send(data.toString());
+    //   console.log(data);
+    // });
+
+
+    const options = {
+      args:
+        [
+          beerId, // starting funds
+          amount, // (initial) wager size
+        ]
+    };
+
+    const PythonShell = require('python-shell');
+    //you can use error handling to see if there are any errors
+    PythonShell.PythonShell.run('.\\..\\python\\UseModel.py', options, function (err, results) {
+    //your code
+      console.log(err);
+      console.log(results);
+    });
+
+  };
+
+  Beer.remoteMethod('itemBasedRecommendation', {
+    accepts: [
+      {arg: 'beerId', type: 'number', required: true},
+      {arg: 'amount', type: 'number', required: true},
+    ],
+    http: {path: '/itemBasedRecommendation', verb: 'get'},
+    returns: {type: 'object', root: true},
   });
 };
