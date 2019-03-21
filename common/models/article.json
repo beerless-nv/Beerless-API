@@ -72,6 +72,14 @@
         "nestRemoting": true
       },
       "through": "Activity"
+    },
+    "author": {
+      "type": "belongsTo",
+      "model": "UserFull",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
     }
   },
   "acls": [],

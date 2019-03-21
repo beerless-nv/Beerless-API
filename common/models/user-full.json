@@ -135,6 +135,14 @@
       "options": {
         "nestRemoting": true
       }
+    },
+    "articles": {
+      "type": "hasMany",
+      "model": "Article",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
     }
   },
   "acls": [],

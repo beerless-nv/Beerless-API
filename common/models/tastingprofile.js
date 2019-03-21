@@ -1,7 +1,11 @@
 'use strict';
 
 module.exports = function(Tastingprofile) {
-
+  /**
+   * Validation
+   */
+  Tastingprofile.validatesPresenceOf('beerId', 'userId');
+  Tastingprofile.validatesNumericalityOf('malty', 'sweet', 'sour', 'hoppy', 'bitter', 'fruity');
 
   /**
    * Get the average tastingprofiles of all beers.

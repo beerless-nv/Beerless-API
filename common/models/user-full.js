@@ -2,6 +2,12 @@
 
 // const LoopBackContext = require('loopback-context');
 module.exports = function(Userfull) {
+  /**
+   * Validation
+   */
+  // Userfull.validatesPresenceOf('favouriteBeerId');
+  Userfull.validatesUniquenessOf('username', 'email');
+  Userfull.validatesNumericalityOf('emailVerified', 'totalPoints', 'favouriteBeerId');
 
   /**
    * get user function

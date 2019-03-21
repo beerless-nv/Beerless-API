@@ -2,6 +2,19 @@
 
 const LoopBackContext = require('loopback-context');
 module.exports = function(Article) {
+  /**
+   * Validation
+   */
+  Article.validatesPresenceOf('userId');
+  Article.validatesUniquenessOf('title', 'slug');
+
+
+  /**
+   * User entries for articles
+   *
+   * @param data
+   * @returns {Promise<void>}
+   */
   Article.articleEntry = async function(data) {
     // check if isApproved exists
     if (!data['isApproved']) {

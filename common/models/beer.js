@@ -4,6 +4,18 @@ const LoopBackContext = require('loopback-context');
 const axios = require('axios');
 
 module.exports = function(Beer) {
+  /**
+   * Validation
+   */
+  Beer.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since', 'isApproved');
+  Beer.validatesUniquenessOf('name');
+
+  /**
+   * User entries for beers
+   *
+   * @param data
+   * @returns {Promise<void>}
+   */
   Beer.beerEntry = async function(data) {
     // check if isApproved exists
     if (!data['isApproved']) {

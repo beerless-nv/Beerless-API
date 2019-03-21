@@ -2,6 +2,19 @@
 
 const LoopBackContext = require('loopback-context');
 module.exports = function(Brewery) {
+  /**
+   * Validation
+   */
+  Brewery.validatesPresenceOf('contactId');
+  Brewery.validatesUniquenessOf('name');
+  Brewery.validatesNumericalityOf('contactId', 'isApproved');
+
+  /**
+   * User entries for breweries
+   *
+   * @param data
+   * @returns {Promise<void>}
+   */
   Brewery.breweryEntry = async function(data) {
     // check if isApproved exists
     if (!data['isApproved']) {
