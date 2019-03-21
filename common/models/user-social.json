@@ -6,6 +6,12 @@
   "options": {
     "validateUpsert": true
   },
+  "mixins": {
+    "TimeStamp": {
+      "createdAt": "timestampCreated",
+      "updatedAt": "timestampUpdated"
+    }
+  },
   "properties": {
     "socialId": {
       "type": "number",
@@ -20,16 +26,6 @@
     "picture": {
       "type": "string",
       "default": "null"
-    },
-    "timestampCreated": {
-      "type": "date",
-      "required": true,
-      "default": "1970-01-01T00:00:00.000Z"
-    },
-    "timestampUpdated": {
-      "type": "date",
-      "required": true,
-      "default": "1970-01-01T00:00:00.000Z"
     }
   },
   "validations": [],
@@ -46,3 +42,6 @@
   "acls": [],
   "methods": {}
 }
+
+
+ROLES

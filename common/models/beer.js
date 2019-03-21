@@ -1,6 +1,8 @@
 'use strict';
 
 const LoopBackContext = require('loopback-context');
+const axios = require('axios');
+
 module.exports = function(Beer) {
   Beer.beerEntry = async function(data) {
     // check if isApproved exists
@@ -53,34 +55,29 @@ module.exports = function(Beer) {
   });
 
   Beer.itemBasedRecommendation = async function(beerId, amount, res) {
-    console.log('beerId', beerId);
-    console.log('amount', amount);
+    return new Promise(function(resolve, reject) {
+      let recommendations = [];
 
-    // const spawn = require('child_process').spawn;
-    // const process = spawn('python', ['./../../extra_scripts/UseModel.py', beerId, amount]);
-    //
-    // process.stdout.on('data', function(data) {
-    //   res.send(data.toString());
-    //   console.log(data);
-    // });
+      // http request to recommendation script
+      axios.get('https://beerless-scripts-1.appspot.com/itemBasedRecommendation?beerId=' + beerId + '&amount=' + amount)
+        .then(async(response) => {
+          for (const recommendation of response.data) {
 
+            // make recommendation objects and add it to the array
+            recommendations.push(
+              {
+                beer: await Beer.findById(recommendation.beerId),
+                distance: recommendation.distance,
+              },
+            );
+          }
 
-    const options = {
-      args:
-        [
-          beerId, // starting funds
-          amount, // (initial) wager size
-        ]
-    };
-
-    const PythonShell = require('python-shell');
-    //you can use error handling to see if there are any errors
-    PythonShell.PythonShell.run('.\\..\\python\\UseModel.py', options, function (err, results) {
-    //your code
-      console.log(err);
-      console.log(results);
+          resolve(recommendations);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     });
-
   };
 
   Beer.remoteMethod('itemBasedRecommendation', {

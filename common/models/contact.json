@@ -6,6 +6,12 @@
   "options": {
     "validateUpsert": true
   },
+  "mixins": {
+    "TimeStamp": {
+      "createdAt": "timestampCreated",
+      "updatedAt": "timestampUpdated"
+    }
+  },
   "properties": {
     "website": {
       "type": "string",
@@ -22,14 +28,6 @@
     "instagram": {
       "type": "string",
       "default": "null"
-    },
-    "timestampCreated": {
-      "type": "date",
-      "default": "1970-01-01T00:00:00.000Z"
-    },
-    "timestampUpdated": {
-      "type": "date",
-      "default": "1970-01-01T00:00:00.000Z"
     }
   },
   "validations": [],

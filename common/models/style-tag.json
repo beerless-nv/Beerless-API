@@ -6,6 +6,12 @@
   "options": {
     "validateUpsert": true
   },
+  "mixins": {
+    "TimeStamp": {
+      "createdAt": "timestampCreated",
+      "updatedAt": "timestampUpdated"
+    }
+  },
   "properties": {
     "name": {
       "type": "string",
@@ -16,16 +22,6 @@
       "type": "string",
       "required": false,
       "default": "null"
-    },
-    "timestampCreated": {
-      "type": "date",
-      "required": true,
-      "default": "1970-01-01T00:00:00.000Z"
-    },
-    "timestampUpdated": {
-      "type": "date",
-      "required": true,
-      "default": "1970-01-01T00:00:00.000Z"
     }
   },
   "validations": [],
