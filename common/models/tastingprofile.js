@@ -25,13 +25,11 @@ module.exports = function(Tastingprofile) {
     const ds = Tastingprofile.dataSource;
 
     // execute query on database
-    let resultQuery = new Promise(resolve => {
+    return new Promise(resolve => {
       ds.connector.query(query, function(err, result) {
         resolve(result);
       });
     });
-
-    return resultQuery;
   };
 
   Tastingprofile.remoteMethod('getAllAverages', {

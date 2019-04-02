@@ -7,6 +7,7 @@ module.exports = function(Beer) {
   /**
    * Validation
    */
+  Beer.validatesPresenceOf('name', 'ABV');
   Beer.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since', 'isApproved');
   Beer.validatesUniquenessOf('name');
 
@@ -66,6 +67,14 @@ module.exports = function(Beer) {
     returns: {type: 'object', root: true},
   });
 
+  /**
+   * Item-based beer recommendations
+   *
+   * @param beerId
+   * @param amount
+   * @param res
+   * @returns {Promise<*>}
+   */
   Beer.itemBasedRecommendation = async function(beerId, amount, res) {
     return new Promise(function(resolve, reject) {
       let recommendations = [];
@@ -98,6 +107,33 @@ module.exports = function(Beer) {
       {arg: 'amount', type: 'number', required: true},
     ],
     http: {path: '/itemBasedRecommendation', verb: 'get'},
+    returns: {type: 'object', root: true},
+  });
+
+  /**
+   * Beer search method
+   *
+   * @param data
+   * @returns {Promise<void>}
+   */
+  Beer.search = async function(data) {
+    // create sql query
+    const query = "SELECT * FROM Beer WHERE name COLLATE UTF8_GENERAL_CI like ?";
+
+    // define datasource
+    const ds = Beer.dataSource;
+
+    // execute query on database
+    return new Promise(resolve => {
+      ds.connector.query(query, ["%" + data + "%"], function(err, result) {
+        resolve(result);
+      });
+    });
+  };
+
+  Beer.remoteMethod('search', {
+    accepts: {arg: 'value', type: 'string', required: true},
+    http: {path: '/search', verb: 'get'},
     returns: {type: 'object', root: true},
   });
 };
