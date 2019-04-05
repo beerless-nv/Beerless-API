@@ -37,7 +37,8 @@
     "beers": {
       "type": "hasMany",
       "model": "Beer",
-      "foreignKey": "beerId",
+      "foreignKey": "styleTagId",
+      "keyThrough": "beerId",
       "options": {
         "nestRemoting": true
       },
