@@ -7,6 +7,7 @@
     "password": "mysql",
     "name": "mysql-beerless",
     "user": "root",
-    "connector": "mysql"
+    "connector": "mysql",
+    "connectTimeout": 1000000
   }
 }

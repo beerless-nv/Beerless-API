@@ -1,5 +1,7 @@
 'use strict';
 
+const axios = require('axios');
+
 const LoopBackContext = require('loopback-context');
 module.exports = function(Brewery) {
   /**
@@ -63,5 +65,45 @@ module.exports = function(Brewery) {
     },
     returns: {type: 'object', root: true},
     http: {path: '/breweryEntry', verb: 'post'},
+  });
+
+  /**
+   * Uploads all breweries to the entitylabel brewery_list in Oswald.
+   *
+   * @returns {Promise<boolean>}
+   */
+  Brewery.uploadEntities = async function() {
+    // variables
+    const breweries = await Brewery.find();
+    const chatbotId = '5c909b61ccc52e00050a6e76';
+    const baseUri = 'https://admin-api.oswald.ai/api/v1';
+    const entityLabelId = '5ca5b5f6696d2900055a1df1';
+    const params = {
+      'access_token': 'NEjjJgDwVTx4g7biimfuHobQixgtPWriJHYgq9ZXNwgi9V3ZddCA4gOBPWb0VFcb',
+    };
+    const payload = {
+      'label': 'brewery_list',
+      'useForCorrections': true,
+      'chatbotId': chatbotId,
+    };
+
+    for (const brewery of breweries) {
+      const payload = {
+        'value': {
+          'en': brewery['name'],
+        },
+        'useForCorrections': true,
+        'chatbotId': chatbotId,
+      };
+
+      const result = await axios.post(baseUri + '/entity-labels/' + entityLabelId + '/values', payload, {params: params});
+    }
+
+    return true;
+  };
+
+  Brewery.remoteMethod('uploadEntities', {
+    http: {path: '/uploadEntities', verb: 'get'},
+    returns: {type: 'boolean', root: true},
   });
 };

@@ -118,14 +118,14 @@ module.exports = function(Beer) {
    */
   Beer.search = async function(data) {
     // create sql query
-    const query = "SELECT * FROM Beer WHERE name COLLATE UTF8_GENERAL_CI like ?";
+    const query = 'SELECT * FROM Beer WHERE name COLLATE UTF8_GENERAL_CI like ?';
 
     // define datasource
     const ds = Beer.dataSource;
 
     // execute query on database
     return new Promise(resolve => {
-      ds.connector.query(query, ["%" + data + "%"], function(err, result) {
+      ds.connector.query(query, ['%' + data + '%'], function(err, result) {
         resolve(result);
       });
     });
@@ -135,5 +135,45 @@ module.exports = function(Beer) {
     accepts: {arg: 'value', type: 'string', required: true},
     http: {path: '/search', verb: 'get'},
     returns: {type: 'object', root: true},
+  });
+
+  /**
+   * Uploads all beers to the entitylabel beer_list in Oswald.
+   *
+   * @returns {Promise<boolean>}
+   */
+  Beer.uploadEntities = async function() {
+    // variables
+    const beers = await Beer.find();
+    const chatbotId = '5c909b61ccc52e00050a6e76';
+    const baseUri = 'https://admin-api.oswald.ai/api/v1';
+    const entityLabelId = '5c9cd1b36077d200051fcf5d';
+    const params = {
+      'access_token': 'NEjjJgDwVTx4g7biimfuHobQixgtPWriJHYgq9ZXNwgi9V3ZddCA4gOBPWb0VFcb',
+    };
+    const payload = {
+      'label': 'beer_list',
+      'useForCorrections': true,
+      'chatbotId': chatbotId,
+    };
+
+    for (const beer of beers) {
+      const payload = {
+        'value': {
+          'en': beer['name'],
+        },
+        'useForCorrections': true,
+        'chatbotId': chatbotId,
+      };
+
+      const result = await axios.post(baseUri + '/entity-labels/' + entityLabelId + '/values', payload, {params: params});
+    }
+
+    return true;
+  };
+
+  Beer.remoteMethod('uploadEntities', {
+    http: {path: '/uploadEntities', verb: 'get'},
+    returns: {type: 'boolean', root: true},
   });
 };
