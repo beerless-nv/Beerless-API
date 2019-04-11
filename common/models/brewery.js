@@ -92,6 +92,7 @@ module.exports = function(Brewery) {
         'value': {
           'en': brewery['name'],
         },
+        'synonyms': [],
         'useForCorrections': true,
         'chatbotId': chatbotId,
       };

@@ -162,6 +162,7 @@ module.exports = function(Beer) {
         'value': {
           'en': beer['name'],
         },
+        'synonyms': [],
         'useForCorrections': true,
         'chatbotId': chatbotId,
       };

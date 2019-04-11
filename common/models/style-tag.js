@@ -35,6 +35,7 @@ module.exports = function(Styletag) {
         'value': {
           'en': styletag['name'],
         },
+        'synonyms': [],
         'useForCorrections': true,
         'chatbotId': chatbotId,
       };
