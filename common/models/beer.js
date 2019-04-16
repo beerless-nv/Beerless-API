@@ -2,6 +2,8 @@
 
 const LoopBackContext = require('loopback-context');
 const axios = require('axios');
+var Blob = require('node-blob');
+var fs = 
 
 module.exports = function(Beer) {
   /**
@@ -143,38 +145,70 @@ module.exports = function(Beer) {
    * @returns {Promise<boolean>}
    */
   Beer.uploadEntities = async function() {
+
     // variables
-    const beers = await Beer.find();
+    const beers = await Beer.find({where: {isApproved:1}});
     const chatbotId = '5c909b61ccc52e00050a6e76';
-    const baseUri = 'https://admin-api.oswald.ai/api/v1';
-    const entityLabelId = '5c9cd1b36077d200051fcf5d';
-    const params = {
-      'access_token': 'NEjjJgDwVTx4g7biimfuHobQixgtPWriJHYgq9ZXNwgi9V3ZddCA4gOBPWb0VFcb',
-    };
-    const payload = {
-      'label': 'beer_list',
-      'useForCorrections': true,
-      'chatbotId': chatbotId,
-    };
+    const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
+    const entityLabelId = '5cb587844648730006817311';
+    // const cols = [["beername", "synonymA"]];
+    // let csvContent = "data:text/csv;charset=utf-8," + cols.map(e=>e.join(",")) + "\n";
+    var data = [];
+    var value = {};
+    var synonyms = [];
+    const options = {
+      'headers' : {
+        'Content-Type' : 'application/json'
+      },
+      'params' : {
+      'access_token': 'bSRuHuVDxaUIIy0DYf01IcB1vcqolAggwvLPaLxVkqEzOFBxOjztJbemRzI6YvCk',
+      }
+  };
+    
 
     for (const beer of beers) {
-      const payload = {
-        'value': {
-          'en': beer['name'],
-        },
-        'synonyms': [],
-        'useForCorrections': true,
-        'chatbotId': chatbotId,
-      };
+      //Get beername from beers
+      var beerName = beer["name"];
+      let row = "";
+      var regex = /[.]/g;
 
-      const result = await axios.post(baseUri + '/entity-labels/' + entityLabelId + '/values', payload, {params: params});
-    }
+      //Create boolean to check '.'
+      var includesCharacter = regex.test(beerName);
 
-    return true;
+      
+
+      //Check if beername contains '.'
+      if(includesCharacter){
+        //Remove special character '.'
+        value = {"en": beerName};
+        synonyms = [{"text" : beerName.replace(regex, ''), "lang" : "en"}];
+      }
+      else{
+        //Add only beername to csv if no '.' character
+        value = {"en": beerName};
+        synonyms = [];
+      }
+      row = {value: value, synonyms: synonyms, "useForCorrections" : true};
+      data.push(row);
+    };
+
+    
+    //Create body
+    const body = {
+      "language" : "en",
+      "keepExisting": false,
+      "data": data
+    };
+
+    //POST request
+    axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity',body, options).catch(err => console.log(err));
+
+
+    return data;
   };
 
   Beer.remoteMethod('uploadEntities', {
     http: {path: '/uploadEntities', verb: 'get'},
-    returns: {type: 'boolean', root: true},
+    returns: {type: 'array', root: true},
   });
 };

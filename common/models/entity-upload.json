@@ -1,0 +1,23 @@
+{
+  "name": "EntityUpload",
+  "plural": "entityUploads",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "timestampCreated": {
+      "type": "string",
+      "required": true
+    },
+    "tableName": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
