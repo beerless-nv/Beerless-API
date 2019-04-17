@@ -1,5 +1,6 @@
 'use strict';
 
+const LoopBackContext = require('loopback-context');
 const axios = require('axios');
 
 module.exports = function (Styletag) {

@@ -1,10 +1,10 @@
 cron:
 - description: "Upload file entity beer"
-  url: /beers/uploadEntities
+  url: /api/beers/uploadEntities?access_token=smCLVeBjK79ywuPJFRI599qiu1JFFgKVJrVCq9mtzV0Nus5j5IYB9B8B9uthSTc6
   schedule: every 24 hours
 - description: "Upload file entity brewery"
-  url: /breweries/uploadEntities
+  url: /api/breweries/uploadEntities?access_token=smCLVeBjK79ywuPJFRI599qiu1JFFgKVJrVCq9mtzV0Nus5j5IYB9B8B9uthSTc6
   schedule: every 24 hours
 - description: "Upload file entity styletag"
-  url: /styleTags/uploadEntities
+  url: /api/styleTags/uploadEntities?access_token=smCLVeBjK79ywuPJFRI599qiu1JFFgKVJrVCq9mtzV0Nus5j5IYB9B8B9uthSTc6
   schedule: every 24 hours
