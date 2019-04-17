@@ -145,14 +145,11 @@ module.exports = function(Beer) {
    * @returns {Promise<boolean>}
    */
   Beer.uploadEntities = async function() {
-
     // variables
     const beers = await Beer.find({where: {isApproved:1}});
     const chatbotId = '5c909b61ccc52e00050a6e76';
     const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
     const entityLabelId = '5cb587844648730006817311';
-    // const cols = [["beername", "synonymA"]];
-    // let csvContent = "data:text/csv;charset=utf-8," + cols.map(e=>e.join(",")) + "\n";
     var data = [];
     var value = {};
     var synonyms = [];
@@ -163,9 +160,9 @@ module.exports = function(Beer) {
       'params' : {
       'access_token': 'bSRuHuVDxaUIIy0DYf01IcB1vcqolAggwvLPaLxVkqEzOFBxOjztJbemRzI6YvCk',
       }
-  };
-    
+  };    
 
+    //Get all beernames and modify them for json
     for (const beer of beers) {
       //Get beername from beers
       var beerName = beer["name"];
@@ -173,9 +170,7 @@ module.exports = function(Beer) {
       var regex = /[.]/g;
 
       //Create boolean to check '.'
-      var includesCharacter = regex.test(beerName);
-
-      
+      var includesCharacter = regex.test(beerName);      
 
       //Check if beername contains '.'
       if(includesCharacter){
@@ -191,7 +186,6 @@ module.exports = function(Beer) {
       row = {value: value, synonyms: synonyms, "useForCorrections" : true};
       data.push(row);
     };
-
     
     //Create body
     const body = {
@@ -203,7 +197,7 @@ module.exports = function(Beer) {
     //POST request
     axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity',body, options).catch(err => console.log(err));
 
-
+    //Return json data array
     return data;
   };
 

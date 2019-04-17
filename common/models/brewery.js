@@ -73,38 +73,64 @@ module.exports = function(Brewery) {
    * @returns {Promise<boolean>}
    */
   Brewery.uploadEntities = async function() {
-    // variables
-    const breweries = await Brewery.find();
-    const chatbotId = '5c909b61ccc52e00050a6e76';
-    const baseUri = 'https://admin-api.oswald.ai/api/v1';
-    const entityLabelId = '5ca5b5f6696d2900055a1df1';
-    const params = {
-      'access_token': 'NEjjJgDwVTx4g7biimfuHobQixgtPWriJHYgq9ZXNwgi9V3ZddCA4gOBPWb0VFcb',
-    };
-    const payload = {
-      'label': 'brewery_list',
-      'useForCorrections': true,
-      'chatbotId': chatbotId,
-    };
-
-    for (const brewery of breweries) {
-      const payload = {
-        'value': {
-          'en': brewery['name'],
-        },
-        'synonyms': [],
-        'useForCorrections': true,
-        'chatbotId': chatbotId,
-      };
-
-      const result = await axios.post(baseUri + '/entity-labels/' + entityLabelId + '/values', payload, {params: params});
-    }
-
-    return true;
+     // variables
+     const breweries = await Brewery.find({where: {isApproved:1}});
+     const chatbotId = '5c909b61ccc52e00050a6e76';
+     const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
+     const entityLabelId = '5cb6d923d9480f0006127fb2';
+     var data = [];
+     var value = {};
+     var synonyms = [];
+     const options = {
+       'headers' : {
+         'Content-Type' : 'application/json'
+       },
+       'params' : {
+       'access_token': 'bSRuHuVDxaUIIy0DYf01IcB1vcqolAggwvLPaLxVkqEzOFBxOjztJbemRzI6YvCk',
+       }
+   };
+     
+     //Loop through all breweries to make json
+     for (const brewery of breweries) {
+       //Get breweryname from breweries
+       var breweryName = brewery["name"];
+       let row = "";
+       var regex = /[.]/g;
+ 
+       //Create boolean to check '.'
+       var includesCharacter = regex.test(breweryName);
+ 
+       //Check if breweryname contains '.'
+       if(includesCharacter){
+         //Remove special character '.'
+         value = {"en": breweryName};
+         synonyms = [{"text" : breweryName.replace(regex, ''), "lang" : "en"}];
+       }
+       else{
+         //Add only breweryname to json if no '.' character
+         value = {"en": breweryName};
+         synonyms = [];
+       }
+       row = {value: value, synonyms: synonyms, "useForCorrections" : true};
+       data.push(row);
+     };
+     
+     //Create body
+     const body = {
+       "language" : "en",
+       "keepExisting": false,
+       "data": data
+     };
+ 
+     //POST request
+     axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity',body, options).catch(err => console.log(err));
+     
+     //Return data
+     return data;
   };
 
   Brewery.remoteMethod('uploadEntities', {
     http: {path: '/uploadEntities', verb: 'get'},
-    returns: {type: 'boolean', root: true},
+    returns: {type: 'array', root: true},
   });
 };

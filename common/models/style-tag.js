@@ -17,37 +17,63 @@ module.exports = function(Styletag) {
    */
   Styletag.uploadEntities = async function() {
     // variables
-    const styletags = await Styletag.find();
+    const styletags = await Styletag.find({where: {isApproved:1}});
     const chatbotId = '5c909b61ccc52e00050a6e76';
-    const baseUri = 'https://admin-api.oswald.ai/api/v1';
-    const entityLabelId = '5ca5abec696d2900055a1dbc';
-    const params = {
-      'access_token': 'NEjjJgDwVTx4g7biimfuHobQixgtPWriJHYgq9ZXNwgi9V3ZddCA4gOBPWb0VFcb',
-    };
-    const payload = {
-      'label': 'beerstyle_list',
-      'useForCorrections': true,
-      'chatbotId': chatbotId,
-    };
+    const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
+    const entityLabelId = '5cb6d8fed9480f0006127fb1';
+    var data = [];
+    var value = {};
+    var synonyms = [];
+    const options = {
+      'headers' : {
+        'Content-Type' : 'application/json'
+      },
+      'params' : {
+      'access_token': 'bSRuHuVDxaUIIy0DYf01IcB1vcqolAggwvLPaLxVkqEzOFBxOjztJbemRzI6YvCk',
+      }
+  };
 
+    //Loop through all styletags to make json file
     for (const styletag of styletags) {
-      const payload = {
-        'value': {
-          'en': styletag['name'],
-        },
-        'synonyms': [],
-        'useForCorrections': true,
-        'chatbotId': chatbotId,
-      };
+      //Get styletagName from styletags
+      var styletagName = styletag["name"];
+      let row = "";
+      var regex = /[.]/g;
 
-      const result = await axios.post(baseUri + '/entity-labels/' + entityLabelId + '/values', payload, {params: params});
-    }
+      //Create boolean to check '.'
+      var includesCharacter = regex.test(styletagName);
 
-    return true;
+      //Check if styletagName contains '.'
+      if(includesCharacter){
+        //Remove special character '.'
+        value = {"en": styletagName};
+        synonyms = [{"text" : styletagName.replace(regex, ''), "lang" : "en"}];
+      }
+      else{
+        //Add only styletagName to csv if no '.' character
+        value = {"en": styletagName};
+        synonyms = [];
+      }
+      row = {value: value, synonyms: synonyms, "useForCorrections" : true};
+      data.push(row);
+    };
+    
+    //Create body
+    const body = {
+      "language" : "en",
+      "keepExisting": false,
+      "data": data
+    };
+
+    //POST request
+    axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity',body, options).catch(err => console.log(err));
+    
+    //Return data
+    return data;
   };
 
   Styletag.remoteMethod('uploadEntities', {
     http: {path: '/uploadEntities', verb: 'get'},
-    returns: {type: 'boolean', root: true},
+    returns: {type: 'array', root: true},
   });
 };
