@@ -1,0 +1,10 @@
+cron:
+- description: "Upload file entity beer"
+  url: /beers/uploadEntities
+  schedule: every 24 hours
+- description: "Upload file entity brewery"
+  url: /breweries/uploadEntities
+  schedule: every 24 hours
+- description: "Upload file entity styletag"
+  url: /styleTags/uploadEntities
+  schedule: every 24 hours

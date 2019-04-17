@@ -107,9 +107,5 @@
     "options": {
       "allowEternalTokens": true
     }
-  },
-  "EntityUpload": {
-    "dataSource": "mysql-beerless",
-    "public": true
   }
 }

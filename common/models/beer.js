@@ -2,10 +2,8 @@
 
 const LoopBackContext = require('loopback-context');
 const axios = require('axios');
-var Blob = require('node-blob');
-var fs = 
 
-module.exports = function(Beer) {
+module.exports = function (Beer) {
   /**
    * Validation
    */
@@ -19,7 +17,7 @@ module.exports = function(Beer) {
    * @param data
    * @returns {Promise<void>}
    */
-  Beer.beerEntry = async function(data) {
+  Beer.beerEntry = async function (data) {
     // check if isApproved exists
     if (!data['isApproved']) {
       data['isApproved'] = 0;
@@ -62,11 +60,11 @@ module.exports = function(Beer) {
     accepts: {
       arg: 'data',
       type: 'object',
-      http: {source: 'body'},
+      http: { source: 'body' },
       required: true,
     },
-    http: {path: '/beerEntry', verb: 'post'},
-    returns: {type: 'object', root: true},
+    http: { path: '/beerEntry', verb: 'post' },
+    returns: { type: 'object', root: true },
   });
 
   /**
@@ -77,13 +75,13 @@ module.exports = function(Beer) {
    * @param res
    * @returns {Promise<*>}
    */
-  Beer.itemBasedRecommendation = async function(beerId, amount, res) {
-    return new Promise(function(resolve, reject) {
+  Beer.itemBasedRecommendation = async function (beerId, amount, res) {
+    return new Promise(function (resolve, reject) {
       let recommendations = [];
 
       // http request to recommendation script
       axios.get('https://beerless-scripts-1.appspot.com/itemBasedRecommendation?beerId=' + beerId + '&amount=' + amount)
-        .then(async(response) => {
+        .then(async (response) => {
           for (const recommendation of response.data) {
 
             // make recommendation objects and add it to the array
@@ -105,11 +103,11 @@ module.exports = function(Beer) {
 
   Beer.remoteMethod('itemBasedRecommendation', {
     accepts: [
-      {arg: 'beerId', type: 'number', required: true},
-      {arg: 'amount', type: 'number', required: true},
+      { arg: 'beerId', type: 'number', required: true },
+      { arg: 'amount', type: 'number', required: true },
     ],
-    http: {path: '/itemBasedRecommendation', verb: 'get'},
-    returns: {type: 'object', root: true},
+    http: { path: '/itemBasedRecommendation', verb: 'get' },
+    returns: { type: 'object', root: true },
   });
 
   /**
@@ -118,7 +116,7 @@ module.exports = function(Beer) {
    * @param data
    * @returns {Promise<void>}
    */
-  Beer.search = async function(data) {
+  Beer.search = async function (data) {
     // create sql query
     const query = 'SELECT * FROM Beer WHERE name COLLATE UTF8_GENERAL_CI like ?';
 
@@ -127,16 +125,16 @@ module.exports = function(Beer) {
 
     // execute query on database
     return new Promise(resolve => {
-      ds.connector.query(query, ['%' + data + '%'], function(err, result) {
+      ds.connector.query(query, ['%' + data + '%'], function (err, result) {
         resolve(result);
       });
     });
   };
 
   Beer.remoteMethod('search', {
-    accepts: {arg: 'value', type: 'string', required: true},
-    http: {path: '/search', verb: 'get'},
-    returns: {type: 'object', root: true},
+    accepts: { arg: 'value', type: 'string', required: true },
+    http: { path: '/search', verb: 'get' },
+    returns: { type: 'object', root: true },
   });
 
   /**
@@ -144,65 +142,82 @@ module.exports = function(Beer) {
    *
    * @returns {Promise<boolean>}
    */
-  Beer.uploadEntities = async function() {
-    // variables
-    const beers = await Beer.find({where: {isApproved:1}});
-    const chatbotId = '5c909b61ccc52e00050a6e76';
-    const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
-    const entityLabelId = '5cb587844648730006817311';
-    var data = [];
-    var value = {};
-    var synonyms = [];
-    const options = {
-      'headers' : {
-        'Content-Type' : 'application/json'
-      },
-      'params' : {
-      'access_token': 'bSRuHuVDxaUIIy0DYf01IcB1vcqolAggwvLPaLxVkqEzOFBxOjztJbemRzI6YvCk',
-      }
-  };    
+  Beer.uploadEntities = async function () {
+    // check header
+    const ctx = LoopBackContext.getCurrentContext();
+    if (!ctx['active']['http']['req']['headers']['X-AppEngine-Cron']) {
+      return "Unauthorized access not allowed."
+    }
+    else {
+      // variables
+      const beers = await Beer.find({ where: { isApproved: 1 } });
+      const chatbotId = '5c909b61ccc52e00050a6e76';
+      const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
+      const entityLabelId = '5cb587844648730006817311';
+      let data = [];
+      let value = {};
+      let synonyms = [];
+      let credentials = {
+        "email": "info@beerless.be",
+        "password": "sselreeB1998"
+      };
 
-    //Get all beernames and modify them for json
-    for (const beer of beers) {
-      //Get beername from beers
-      var beerName = beer["name"];
-      let row = "";
-      var regex = /[.]/g;
+      //get login access token
+      const login = (await axios.post(baseUri + "/users/login", credentials))['data'];
 
-      //Create boolean to check '.'
-      var includesCharacter = regex.test(beerName);      
+      //add acces token to options
+      const options = {
+        'headers': {
+          'Content-Type': 'application/json'
+        },
+        'params': {
+          'access_token': login['id'],
+        }
+      };
 
-      //Check if beername contains '.'
-      if(includesCharacter){
-        //Remove special character '.'
-        value = {"en": beerName};
-        synonyms = [{"text" : beerName.replace(regex, ''), "lang" : "en"}];
-      }
-      else{
-        //Add only beername to csv if no '.' character
-        value = {"en": beerName};
-        synonyms = [];
-      }
-      row = {value: value, synonyms: synonyms, "useForCorrections" : true};
-      data.push(row);
+      //Get all beernames and modify them for json
+      for (const beer of beers) {
+        //Get beername from beers
+        let beerName = beer["name"];
+        let row = "";
+        let regex = /[.]/g;
+
+        //Create boolean to check '.'
+        let includesCharacter = regex.test(beerName);
+
+        //Check if beername contains '.'
+        if (includesCharacter) {
+          //Remove special character '.'
+          value = { "en": beerName };
+          synonyms = [{ "text": beerName.replace(regex, ''), "lang": "en" }];
+        }
+        else {
+          //Add only beername to csv if no '.' character
+          value = { "en": beerName };
+          synonyms = [];
+        }
+        row = { value: value, synonyms: synonyms, "useForCorrections": true };
+        data.push(row);
+      };
+
+      //Create body
+      const body = {
+        "language": "en",
+        "keepExisting": false,
+        "data": data
+      };
+
+      //POST request
+      // axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity',body, options).catch(err => console.log(err));
+
+      //Return json data array
+      return data;
     };
-    
-    //Create body
-    const body = {
-      "language" : "en",
-      "keepExisting": false,
-      "data": data
-    };
 
-    //POST request
-    axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity',body, options).catch(err => console.log(err));
-
-    //Return json data array
-    return data;
   };
 
   Beer.remoteMethod('uploadEntities', {
-    http: {path: '/uploadEntities', verb: 'get'},
-    returns: {type: 'array', root: true},
+    http: { path: '/uploadEntities', verb: 'get' },
+    returns: { type: 'array', root: true },
   });
 };
