@@ -25,7 +25,7 @@ module.exports = function (Styletag) {
       err.message = 'Authorization Required';
       err.code = 'AUTHORIZATION_REQUIRED';
       next(err);
-      return;;
+      return;
     }
     // variables
     const styletags = await Styletag.find({ where: { isApproved: 1 } });

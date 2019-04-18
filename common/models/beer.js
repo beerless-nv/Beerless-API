@@ -151,7 +151,7 @@ module.exports = function (Beer) {
       err.message = 'Authorization Required';
       err.code = 'AUTHORIZATION_REQUIRED';
       next(err);
-      return;;
+      return;
     }
     //variables
     const beers = await Beer.find({ where: { isApproved: 1 } });
