@@ -53,8 +53,9 @@
     "./middleware/error-logger": {},
     "strong-error-handler": {
       "params": {
-        "debug": true,
-        "log": true
+        "debug": false,
+        "log": true?
+
       }
     }
   }

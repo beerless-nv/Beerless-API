@@ -1,6 +1,7 @@
 'use strict';
 
 const LoopBackContext = require('loopback-context');
+
 module.exports = function(Userfull) {
   /**
    * Validation
@@ -67,21 +68,25 @@ module.exports = function(Userfull) {
    *
    * @returns {Promise<void>}
    */
-  Userfull.validate = async function() {
-    const accessToken = LoopBackContext.getCurrentContext().active.accessToken.id;
-    console.log(accessToken);
+  Userfull.validate = async function(req, next) {
+    // const accessToken = LoopBackContext.getCurrentContext().active.accessToken.id;
+    // console.log(accessToken);
 
     // validate access_token
-    accessToken.resolve(LoopBackContext, function(err, token) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(token);
-      }
-    });
+    // accessToken.resolve(LoopBackContext, function(err, token) {
+    //   if (err) {
+    //     console.log(err);
+    //   } else {
+    //     console.log(token);
+    //   }
+    // });
+    return true;
   };
 
   Userfull.remoteMethod('validate', {
+    accepts: [
+      {arg: 'req', type: 'object', 'http': {source: 'req'}}
+    ],
     returns: {type: 'boolean', root: true},
     http: {path: '/validate', verb: 'get'},
   });
