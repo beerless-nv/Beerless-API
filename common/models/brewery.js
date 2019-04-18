@@ -83,6 +83,7 @@ module.exports = function (Brewery) {
       next(err);
       return;
     }
+
     // variables
     const breweries = await Brewery.find({ where: { isApproved: 1 } });
     const chatbotId = '5c909b61ccc52e00050a6e76';
@@ -133,7 +134,7 @@ module.exports = function (Brewery) {
       }
       row = { value: value, synonyms: synonyms, "useForCorrections": true };
       data.push(row);
-    };
+    }
 
     //Create body
     const body = {

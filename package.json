@@ -17,6 +17,7 @@
     "compression": "^1.0.3",
     "cors": "^2.5.2",
     "docker": "^1.0.0",
+    "dotenv": "^7.0.0",
     "fs": "0.0.1-security",
     "helmet": "^3.10.0",
     "loopback": "^3.22.0",
