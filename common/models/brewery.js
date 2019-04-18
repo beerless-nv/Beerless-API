@@ -74,7 +74,7 @@ module.exports = function (Brewery) {
    */
   Brewery.uploadEntities = async function (req) {
     // check header
-    if (req.get('x-appengine-Cron') !== 'true') {
+    if (req.get('x-appengine-cron') !== 'true') {
       //401 ERROR Message
       const err = new Error();
       err.statusCode = 401;
