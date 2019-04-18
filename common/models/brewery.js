@@ -72,7 +72,7 @@ module.exports = function (Brewery) {
    *
    * @returns {Promise<boolean>}
    */
-  Brewery.uploadEntities = async function (req) {
+  Brewery.uploadEntities = async function (req, next) {
     // check header
     if (req.get('x-appengine-cron') !== 'true') {
       //401 ERROR Message

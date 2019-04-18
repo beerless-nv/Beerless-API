@@ -142,7 +142,7 @@ module.exports = function (Beer) {
    *
    * @returns {Promise<boolean>}
    */
-  Beer.uploadEntities = async function (req) {
+  Beer.uploadEntities = async function (req, next) {
     // check header
     if (req.get('x-appengine-cron') !== 'true') {
       //401 ERROR Message

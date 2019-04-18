@@ -16,7 +16,7 @@ module.exports = function (Styletag) {
    *
    * @returns {Promise<boolean>}
    */
-  Styletag.uploadEntities = async function (req) {
+  Styletag.uploadEntities = async function (req, next) {
     // check header
     if (req.get('x-appengine-cron') !== 'true') {
       //401 ERROR Message
