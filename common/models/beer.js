@@ -208,7 +208,7 @@ module.exports = function (Beer) {
       };
 
       //POST request
-      // axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity',body, options).catch(err => console.log(err));
+      axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity',body, options).catch(err => console.log(err));
 
       //Return json data array
       return data;
