@@ -1,6 +1,6 @@
 'use strict';
 
-// const LoopBackContext = require('loopback-context');
+const LoopBackContext = require('loopback-context');
 module.exports = function(Userfull) {
   /**
    * Validation
@@ -17,7 +17,6 @@ module.exports = function(Userfull) {
    * @param data
    * @returns {Promise<void>}
    */
-
   Userfull.get = async function(data) {
     if (data != null) {
       let user = await Userfull.findById(data);
@@ -47,7 +46,6 @@ module.exports = function(Userfull) {
    *
    * @returns {Promise<void>}
    */
-
   Userfull.getAll = async function() {
     let users = await Userfull.find();
 
@@ -64,6 +62,30 @@ module.exports = function(Userfull) {
     http: {path: '/getAll', verb: 'get'},
   });
 
+  /**
+   * Validates the user accessToken.
+   *
+   * @returns {Promise<void>}
+   */
+  Userfull.validate = async function() {
+    const accessToken = LoopBackContext.getCurrentContext().active.accessToken.id;
+    console.log(accessToken);
+
+    // validate access_token
+    accessToken.resolve(LoopBackContext, function(err, token) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(token);
+      }
+    });
+  };
+
+  Userfull.remoteMethod('validate', {
+    returns: {type: 'boolean', root: true},
+    http: {path: '/validate', verb: 'get'},
+  });
+
 
   /**
    * Extending user create method.
@@ -71,7 +93,6 @@ module.exports = function(Userfull) {
    * This method gives new users a standard user role by adding a RoleMapping
    * entry to the database.
    */
-
   Userfull.afterRemote('create', async function(ctx, modelInstance, next) {
     // const ctx = LoopBackContext.getCurrentContext();
 
