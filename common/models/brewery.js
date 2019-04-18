@@ -99,7 +99,6 @@ module.exports = function (Brewery) {
     //get login access token
     const login = (await axios.post(baseUri + "/users/login", credentials))['data'];
 
-
     //add acces token to options
     const options = {
       'headers': {
