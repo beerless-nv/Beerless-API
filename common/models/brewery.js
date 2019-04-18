@@ -3,7 +3,7 @@
 const axios = require('axios');
 
 const LoopBackContext = require('loopback-context');
-module.exports = function(Brewery) {
+module.exports = function (Brewery) {
   /**
    * Validation
    */
@@ -17,7 +17,7 @@ module.exports = function(Brewery) {
    * @param data
    * @returns {Promise<void>}
    */
-  Brewery.breweryEntry = async function(data) {
+  Brewery.breweryEntry = async function (data) {
     // check if isApproved exists
     if (!data['isApproved']) {
       data['isApproved'] = 0;
@@ -60,11 +60,11 @@ module.exports = function(Brewery) {
     accepts: {
       arg: 'data',
       type: 'object',
-      http: {source: 'body'},
+      http: { source: 'body' },
       required: true,
     },
-    returns: {type: 'object', root: true},
-    http: {path: '/breweryEntry', verb: 'post'},
+    returns: { type: 'object', root: true },
+    http: { path: '/breweryEntry', verb: 'post' },
   });
 
   /**
@@ -72,39 +72,82 @@ module.exports = function(Brewery) {
    *
    * @returns {Promise<boolean>}
    */
-  Brewery.uploadEntities = async function() {
-    // variables
-    const breweries = await Brewery.find();
-    const chatbotId = '5c909b61ccc52e00050a6e76';
-    const baseUri = 'https://admin-api.oswald.ai/api/v1';
-    const entityLabelId = '5ca5b5f6696d2900055a1df1';
-    const params = {
-      'access_token': 'NEjjJgDwVTx4g7biimfuHobQixgtPWriJHYgq9ZXNwgi9V3ZddCA4gOBPWb0VFcb',
-    };
-    const payload = {
-      'label': 'brewery_list',
-      'useForCorrections': true,
-      'chatbotId': chatbotId,
-    };
-
-    for (const brewery of breweries) {
-      const payload = {
-        'value': {
-          'en': brewery['name'],
-        },
-        'synonyms': [],
-        'useForCorrections': true,
-        'chatbotId': chatbotId,
+  Brewery.uploadEntities = async function () {
+    // check header
+    const ctx = LoopBackContext.getCurrentContext();
+    if (!ctx['active']['http']['req']['headers']['X-AppEngine-Cron']) {
+      return "Unauthorized access not allowed."
+    }
+    else {
+      // variables
+      const breweries = await Brewery.find({ where: { isApproved: 1 } });
+      const chatbotId = '5c909b61ccc52e00050a6e76';
+      const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
+      const entityLabelId = '5cb6d923d9480f0006127fb2';
+      let data = [];
+      let value = {};
+      let synonyms = [];
+      let credentials = {
+        "email": "info@beerless.be",
+        "password": "sselreeB1998"
       };
 
-      const result = await axios.post(baseUri + '/entity-labels/' + entityLabelId + '/values', payload, {params: params});
-    }
+      //get login access token
+      const login = (await axios.post(baseUri + "/users/login", credentials))['data'];
 
-    return true;
+
+      //add acces token to options
+      const options = {
+        'headers': {
+          'Content-Type': 'application/json'
+        },
+        'params': {
+          'access_token': login['id'],
+        }
+      };
+
+      //Loop through all breweries to make json
+      for (const brewery of breweries) {
+        //Get breweryname from breweries
+        let breweryName = brewery["name"];
+        let row = "";
+        let regex = /[.]/g;
+
+        //Create boolean to check '.'
+        let includesCharacter = regex.test(breweryName);
+
+        //Check if breweryname contains '.'
+        if (includesCharacter) {
+          //Remove special character '.'
+          value = { "en": breweryName };
+          synonyms = [{ "text": breweryName.replace(regex, ''), "lang": "en" }];
+        }
+        else {
+          //Add only breweryname to json if no '.' character
+          value = { "en": breweryName };
+          synonyms = [];
+        }
+        row = { value: value, synonyms: synonyms, "useForCorrections": true };
+        data.push(row);
+      };
+
+      //Create body
+      const body = {
+        "language": "en",
+        "keepExisting": false,
+        "data": data
+      };
+
+      //POST request
+      axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity', body, options).catch(err => console.log(err));
+
+      //Return data
+      return data;
+    };
   };
 
   Brewery.remoteMethod('uploadEntities', {
-    http: {path: '/uploadEntities', verb: 'get'},
-    returns: {type: 'boolean', root: true},
+    http: { path: '/uploadEntities', verb: 'get' },
+    returns: { type: 'array', root: true },
   });
 };
