@@ -20,7 +20,7 @@
   },
   "AccessToken": {
     "dataSource": "mysql-beerless",
-    "public": false
+    "public": true
   },
   "ACL": {
     "dataSource": "mysql-beerless",
@@ -28,7 +28,7 @@
   },
   "RoleMapping": {
     "dataSource": "mysql-beerless",
-    "public": false,
+    "public": true,
     "options": {
       "strictObjectIDCoercion": true
     }

@@ -10,6 +10,9 @@
     "TimeStamp": {
       "createdAt": "timestampCreated",
       "updatedAt": "timestampUpdated"
+    },
+    "UserRestrictions": {
+      "email": true
     }
   },
   "hidden": [
