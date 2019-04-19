@@ -126,6 +126,7 @@ module.exports = function (Beer) {
     // execute query on database
     return new Promise(resolve => {
       ds.connector.query(query, ['%' + data + '%'], function (err, result) {
+        console.log(result);
         resolve(result);
       });
     });

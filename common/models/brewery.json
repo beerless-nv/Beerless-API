@@ -88,6 +88,14 @@
         "nestRemoting": true
       },
       "through": "Activity"
+    },
+    "beerFromBreweries": {
+      "type": "hasMany",
+      "model": "BeerFromBrewery",
+      "foreignKey": "breweryId",
+      "options": {
+        "nestRemoting": true
+      }
     }
   },
   "acls": [],
