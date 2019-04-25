@@ -39,7 +39,6 @@
   "auth:after": {
     "./middleware/include-restrictions": {}
   },
-  "auth": {},
   "parse": {},
   "routes": {
     "loopback#rest": {

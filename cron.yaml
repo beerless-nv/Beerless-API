@@ -11,3 +11,7 @@ cron:
   url: /api/styleTags/uploadEntities?access_token=smCLVeBjK79ywuPJFRI599qiu1JFFgKVJrVCq9mtzV0Nus5j5IYB9B8B9uthSTc6
   schedule: every day 03:00
   timezone: Europe/Brussels
+- description: "Retrain chatbot after new entries"
+  url: /api/chatbots/retrain?access_token=smCLVeBjK79ywuPJFRI599qiu1JFFgKVJrVCq9mtzV0Nus5j5IYB9B8B9uthSTc6
+  schedule: every day 04:00
+  timezone: Europe/Brussels

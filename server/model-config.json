@@ -107,5 +107,9 @@
     "options": {
       "allowEternalTokens": true
     }
+  },
+  "Chatbot": {
+    "dataSource": "mysql-beerless",
+    "public": true
   }
 }
