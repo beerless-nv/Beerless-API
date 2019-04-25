@@ -36,7 +36,9 @@
     }
   },
   "session": {},
-  "auth": {},
+  "auth:after": {
+    "./middleware/include-restrictions": {}
+  },
   "parse": {},
   "routes": {
     "loopback#rest": {
