@@ -68,27 +68,22 @@ module.exports = function(Userfull) {
    *
    * @returns {Promise<void>}
    */
-  Userfull.validate = async function(req, next) {
-    // const accessToken = LoopBackContext.getCurrentContext().active.accessToken.id;
-    // console.log(accessToken);
+  Userfull.getRole = async function(req) {
+    if (!req.accessToken.id) {
+      return '$everyone';
+    }
 
-    // validate access_token
-    // accessToken.resolve(LoopBackContext, function(err, token) {
-    //   if (err) {
-    //     console.log(err);
-    //   } else {
-    //     console.log(token);
-    //   }
-    // });
-    return true;
+    const roleId = (await Userfull.app.models.RoleMapping.find({where: {principalId: req.accessToken.userId}}))[0]['roleId'];
+
+    return (await Userfull.app.models.Role.findById(roleId))['name'];
   };
 
-  Userfull.remoteMethod('validate', {
+  Userfull.remoteMethod('getRole', {
     accepts: [
       {arg: 'req', type: 'object', 'http': {source: 'req'}}
     ],
-    returns: {type: 'boolean', root: true},
-    http: {path: '/validate', verb: 'get'},
+    returns: {type: 'string', root: true},
+    http: {path: '/getRole', verb: 'get'},
   });
 
 
@@ -99,10 +94,6 @@ module.exports = function(Userfull) {
    * entry to the database.
    */
   Userfull.afterRemote('create', async function(ctx, modelInstance, next) {
-    // const ctx = LoopBackContext.getCurrentContext();
-
-    console.log(ctx.result.id);
-
     const userId = ctx.result.id;
 
     const roleMappingObject = {

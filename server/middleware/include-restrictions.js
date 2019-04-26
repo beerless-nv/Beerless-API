@@ -10,7 +10,7 @@ module.exports = function() {
       return;
     }
 
-    console.log(req.query.filter);
+    // console.log(req.query.filter);
 
     next();
   };
