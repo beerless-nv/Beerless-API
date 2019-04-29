@@ -3,7 +3,7 @@
 const LoopBackContext = require('loopback-context');
 const axios = require('axios');
 
-module.exports = function(Beer) {
+module.exports = function (Beer) {
   /**
    * Validation
    */
@@ -17,7 +17,7 @@ module.exports = function(Beer) {
    * @param data
    * @returns {Promise<void>}
    */
-  Beer.beerEntry = async function(data) {
+  Beer.beerEntry = async function (data) {
     // check if isApproved exists
     if (!data['isApproved']) {
       data['isApproved'] = 0;
@@ -60,11 +60,11 @@ module.exports = function(Beer) {
     accepts: {
       arg: 'data',
       type: 'object',
-      http: {source: 'body'},
+      http: { source: 'body' },
       required: true,
     },
-    http: {path: '/beerEntry', verb: 'post'},
-    returns: {type: 'object', root: true},
+    http: { path: '/beerEntry', verb: 'post' },
+    returns: { type: 'object', root: true },
   });
 
   /**
@@ -75,27 +75,38 @@ module.exports = function(Beer) {
    * @param res
    * @returns {Promise<*>}
    */
-  Beer.itemBasedRecommendation = async function(beerId, amount, res) {
-    return new Promise(function(resolve, reject) {
+  Beer.itemBasedRecommendation = async function (beerId, amount, next) {
+    return new Promise(function (resolve, reject) {
       let recommendations = [];
 
       // http request to recommendation script
       axios.get('https://beerless-scripts-1.appspot.com/itemBasedRecommendation?beerId=' + beerId + '&amount=' + amount)
-        .then(async(response) => {
-          for (const recommendation of response.data) {
+        .then(async (response) => {
+          if (response.data.length > 0) {
+            for (const recommendation of response.data) {
 
-            // make recommendation objects and add it to the array
-            recommendations.push(
-              {
-                beer: await Beer.findById(recommendation.beerId),
-                distance: recommendation.distance,
-              },
-            );
+              // make recommendation objects and add it to the array
+              recommendations.push(
+                {
+                  beer: await Beer.findById(recommendation.beerId),
+                  distance: recommendation.distance,
+                },
+              );
+            }
+
+            resolve(recommendations);
+            // resolve("wel data")
           }
-
-          resolve(recommendations);
-        })
-        .catch((error) => {
+          else {
+            //404 ERROR Message
+            const err = new Error();
+            err.statusCode = 404;
+            err.message = 'Beer not found';
+            err.code = 'ITEM_NOT_FOUND';
+            next(err);
+            resolve();
+          }
+        }).catch((error) => {
           console.log(error);
         });
     });
@@ -103,11 +114,11 @@ module.exports = function(Beer) {
 
   Beer.remoteMethod('itemBasedRecommendation', {
     accepts: [
-      {arg: 'beerId', type: 'number', required: true},
-      {arg: 'amount', type: 'number', required: true},
+      { arg: 'beerId', type: 'number', required: true },
+      { arg: 'amount', type: 'number', required: true },
     ],
-    http: {path: '/itemBasedRecommendation', verb: 'get'},
-    returns: {type: 'object', root: true},
+    http: { path: '/itemBasedRecommendation', verb: 'get' },
+    returns: { type: 'object', root: true },
   });
 
   /**
@@ -116,7 +127,7 @@ module.exports = function(Beer) {
    * @param data
    * @returns {Promise<void>}
    */
-  Beer.search = async function(data) {
+  Beer.search = async function (data) {
     // Beer.find({where: })
 
     // create sql query
@@ -127,7 +138,7 @@ module.exports = function(Beer) {
 
     // execute query on database
     const beers = await new Promise(resolve => {
-      ds.connector.query(query, ['%' + data + '%'], function(err, result) {
+      ds.connector.query(query, ['%' + data + '%'], function (err, result) {
         // console.log(result[0].name);
         resolve(JSON.parse(JSON.stringify(result)));
       });
@@ -139,9 +150,9 @@ module.exports = function(Beer) {
   };
 
   Beer.remoteMethod('search', {
-    accepts: {arg: 'value', type: 'string', required: true},
-    http: {path: '/search', verb: 'get'},
-    returns: {type: 'object', root: true},
+    accepts: { arg: 'value', type: 'string', required: true },
+    http: { path: '/search', verb: 'get' },
+    returns: { type: 'object', root: true },
   });
 
   /**
@@ -149,7 +160,7 @@ module.exports = function(Beer) {
    *
    * @returns {Promise<boolean>}
    */
-  Beer.uploadEntities = async function(req, next) {
+  Beer.uploadEntities = async function (req, next) {
     // check header
     if (req.get('x-appengine-cron') !== 'true') {
       //401 ERROR Message
@@ -162,7 +173,7 @@ module.exports = function(Beer) {
     }
 
     //variables
-    const beers = await Beer.find({where: {isApproved: 1}});
+    const beers = await Beer.find({ where: { isApproved: 1 } });
     const chatbotId = '5c909b61ccc52e00050a6e76';
     const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
     const entityLabelId = '5cb587844648730006817311';
@@ -200,14 +211,14 @@ module.exports = function(Beer) {
       //Check if beername contains '.'
       if (includesCharacter) {
         //Remove special character '.'
-        value = {'en': beerName};
-        synonyms = [{'text': beerName.replace(regex, ''), 'lang': 'en'}];
+        value = { 'en': beerName };
+        synonyms = [{ 'text': beerName.replace(regex, ''), 'lang': 'en' }];
       } else {
         //Add only beername to csv if no '.' character
-        value = {'en': beerName};
+        value = { 'en': beerName };
         synonyms = [];
       }
-      row = {value: value, synonyms: synonyms, 'useForCorrections': true};
+      row = { value: value, synonyms: synonyms, 'useForCorrections': true };
       data.push(row);
     }
 
@@ -227,14 +238,14 @@ module.exports = function(Beer) {
 
   Beer.remoteMethod('uploadEntities', {
     accepts: [
-      {arg: 'req', type: 'object', 'http': {source: 'req'}},
+      { arg: 'req', type: 'object', 'http': { source: 'req' } },
     ],
-    http: {path: '/uploadEntities', verb: 'get'},
-    returns: {type: 'array', root: true},
+    http: { path: '/uploadEntities', verb: 'get' },
+    returns: { type: 'array', root: true },
   });
 
-  Beer.getBeerFromBrewery = async function(beer, brewery) {
-    const result = JSON.parse(JSON.stringify(await Beer.find({where: {name: beer}, include: [{relation: 'breweries', scope: {where: {name: brewery}}}, 'styleTags']})));
+  Beer.getBeerFromBrewery = async function (beer, brewery) {
+    const result = JSON.parse(JSON.stringify(await Beer.find({ where: { name: beer }, include: [{ relation: 'breweries', scope: { where: { name: brewery } } }, 'styleTags'] })));
 
     for (let resultKey in result) {
       if ((result[resultKey]['breweries']).length > 0) {
@@ -247,10 +258,10 @@ module.exports = function(Beer) {
 
   Beer.remoteMethod('getBeerFromBrewery', {
     accepts: [
-      {arg: 'beer', type: 'string', required: true},
-      {arg: 'brewery', type: 'string', required: true},
+      { arg: 'beer', type: 'string', required: true },
+      { arg: 'brewery', type: 'string', required: true },
     ],
-    http: {path: '/beerFromBreweryByName', verb: 'get'},
-    returns: {type: 'array', root: true},
+    http: { path: '/beerFromBreweryByName', verb: 'get' },
+    returns: { type: 'array', root: true },
   });
 };
