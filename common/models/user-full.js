@@ -11,34 +11,24 @@ module.exports = function(Userfull) {
   Userfull.validatesNumericalityOf('emailVerified', 'totalPoints', 'favouriteBeerId');
 
   /**
-   * get user function
-   *
-   * Makes sure there is no personal and restricted info in the response.
+   * Returns logged in user
    *
    * @param data
    * @returns {Promise<void>}
    */
-  Userfull.get = async function(data) {
-    if (data != null) {
-      let user = await Userfull.findById(data);
-
-      user.email = null;
-      user.emailVerified = null;
-
-      return user;
+  Userfull.getLoggedUser = async function(req) {
+    if (req.accessToken) {
+      return Userfull.findById(req.accessToken.userId);
     }
   };
 
-  Userfull.remoteMethod('get', {
-    accepts: {
-      arg: 'data',
-      type: 'number',
-      required: true,
-    },
+  Userfull.remoteMethod('getLoggedUser', {
+    accepts: [
+      {arg: 'req', type: 'object', 'http': {source: 'req'}},
+    ],
     returns: {type: 'object', root: true},
-    http: {path: '/get', verb: 'get'},
+    http: {path: '/getLoggedUser', verb: 'get'},
   });
-
 
   /**
    * getAll users function
@@ -64,7 +54,7 @@ module.exports = function(Userfull) {
   });
 
   /**
-   * Validates the user accessToken.
+   * Returns the role of the current user.
    *
    * @returns {Promise<void>}
    */
@@ -75,17 +65,21 @@ module.exports = function(Userfull) {
 
     const roleId = (await Userfull.app.models.RoleMapping.find({where: {principalId: req.accessToken.userId}}))[0]['roleId'];
 
-    return (await Userfull.app.models.Role.findById(roleId))['name'];
+    return await Userfull.app.models.Role.findById(roleId, {
+      fields: {
+        id: true,
+        name: true,
+      },
+    });
   };
 
   Userfull.remoteMethod('getRole', {
     accepts: [
-      {arg: 'req', type: 'object', 'http': {source: 'req'}}
+      {arg: 'req', type: 'object', 'http': {source: 'req'}},
     ],
     returns: {type: 'string', root: true},
     http: {path: '/getRole', verb: 'get'},
   });
-
 
   /**
    * Extending user create method.

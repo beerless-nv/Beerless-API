@@ -15,9 +15,13 @@ module.exports = function(Model, properties) {
     // Assign default role in case no accessToken is used
     let role = '$everyone';
 
+    // return empty if there is no data
+    if (!data) {
+      return;
+    }
+
     // if accessToken is present, change role to the role of the user
     if (ctx.req.accessToken) {
-
       // get role from current user
       const rolemappingId = (await Model.app.models.RoleMapping.find({where: {principalId: ctx.req.accessToken.userId}}))[0]['roleId'];
       role = (await Model.app.models.Role.findById(rolemappingId))['name'];
@@ -47,6 +51,8 @@ module.exports = function(Model, properties) {
         }
       }
     }
+
+    console.log(data);
 
     next();
   });

@@ -116,26 +116,35 @@ module.exports = function(Beer) {
    * @param data
    * @returns {Promise<void>}
    */
-  Beer.search = async function(data) {
+  Beer.search = async function(data, next) {
+    console.log(data);
+    if (data === 'ok') {
+      const err = new Error();
+      err.statusCode = 401;
+      err.message = 'Authorization Required';
+      err.code = 'AUTHORIZATION_REQUIRED';
+      next(err);
+      return;
+    }
     // Beer.find({where: })
 
-    // create sql query
-    const query = 'SELECT * FROM Beer WHERE name COLLATE UTF8_GENERAL_CI like ?';
+    // // create sql query
+    // const query = 'SELECT * FROM Beer WHERE name COLLATE UTF8_GENERAL_CI like ?';
+    //
+    // // define datasource
+    // const ds = Beer.dataSource;
+    //
+    // // execute query on database
+    // const beers = await new Promise(resolve => {
+    //   ds.connector.query(query, ['%' + data + '%'], function(err, result) {
+    //     // console.log(result[0].name);
+    //     resolve(JSON.parse(JSON.stringify(result)));
+    //   });
+    // });
+    //
+    // console.log(beers);
 
-    // define datasource
-    const ds = Beer.dataSource;
-
-    // execute query on database
-    const beers = await new Promise(resolve => {
-      ds.connector.query(query, ['%' + data + '%'], function(err, result) {
-        // console.log(result[0].name);
-        resolve(JSON.parse(JSON.stringify(result)));
-      });
-    });
-
-    console.log(beers);
-
-    return beers;
+    // return beers;
   };
 
   Beer.remoteMethod('search', {
