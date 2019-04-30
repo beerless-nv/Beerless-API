@@ -9,6 +9,7 @@
   "mixins": {
     "TimeStamp": {
       "createdAt": "timestampCreated",
+      "required": false,
       "updatedAt": "timestampUpdated"
     },
     "UserRestrictions": {

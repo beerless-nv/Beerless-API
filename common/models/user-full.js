@@ -100,4 +100,11 @@ module.exports = function(Userfull) {
 
     return userId;
   });
+
+  Userfull.on('resetPasswordRequest', function(info) {
+    console.log(info.email);
+    console.log(info.accessToken);
+
+
+  })
 };

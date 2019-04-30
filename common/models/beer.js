@@ -84,18 +84,26 @@ module.exports = function (Beer) {
         .then(async (response) => {
           if (response.data.length > 0) {
             for (const recommendation of response.data) {
+              const beer = await Beer.findById(recommendation.beerId);
 
-              // make recommendation objects and add it to the array
-              recommendations.push(
-                {
-                  beer: await Beer.findById(recommendation.beerId),
-                  distance: recommendation.distance,
-                },
-              );
+              // check if beer exists
+              if (beer) {
+
+                // make recommendation objects and add it to the array
+                recommendations.push(
+                  {
+                    beer: beer,
+                    distance: recommendation.distance,
+                  },
+                );
+              }
+
+              if (recommendations.length === amount) {
+                resolve(recommendations);
+              }
             }
 
             resolve(recommendations);
-            // resolve("wel data")
           }
           else {
             //404 ERROR Message
