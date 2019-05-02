@@ -1,6 +1,7 @@
 'use strict';
 
 const LoopBackContext = require('loopback-context');
+require('custom-env').env(true);
 
 module.exports = function(Userfull) {
   /**
@@ -104,7 +105,34 @@ module.exports = function(Userfull) {
   Userfull.on('resetPasswordRequest', function(info) {
     console.log(info.email);
     console.log(info.accessToken);
+    console.log(process.env.FRONTEND_URL);
 
+    var sendgrid = require("@sendgrid/mail");
+    sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+
+    const email = {
+      to: {
+        email: info.email
+      },
+      dynamic_template_data: {
+        'Sender_Name': 'Beerless',
+        'Sender_Address': 'Kempische Steenweg 293',
+        'Sender_City': 'Hasselt',
+        'Sender_State': '',
+        'Sender_Zip': '3500',
+        'Sender_Country': 'Belgium',
+        'Reset_Link': info.accessToken.id,
+      },
+      from: {
+        name: 'Beerless',
+        email: 'info@beerless.be'
+      },
+      subject: 'Reset password',
+      text: 'Forgotton your password?',
+      templateId: 'd-90ffb0ec5d204eb0a44243a7d3887268',
+    };
+
+    sendgrid.send(email);
 
   })
 };
