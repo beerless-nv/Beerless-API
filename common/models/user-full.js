@@ -2,12 +2,12 @@
 
 const LoopBackContext = require('loopback-context');
 require('custom-env').env(true);
+const app = require('./../../server/server');
 
 module.exports = function(Userfull) {
   /**
    * Validation
    */
-  // Userfull.validatesPresenceOf('favouriteBeerId');
   Userfull.validatesUniquenessOf('username', 'email');
   Userfull.validatesNumericalityOf('emailVerified', 'totalPoints', 'favouriteBeerId');
 
@@ -105,7 +105,7 @@ module.exports = function(Userfull) {
   Userfull.on('resetPasswordRequest', function(info) {
     console.log(info.email);
     console.log(info.accessToken);
-    console.log(process.env.FRONTEND_URL);
+    console.log(app.get('frontend_url'));
 
     var sendgrid = require("@sendgrid/mail");
     sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
@@ -121,7 +121,7 @@ module.exports = function(Userfull) {
         'Sender_State': '',
         'Sender_Zip': '3500',
         'Sender_Country': 'Belgium',
-        'Reset_Link': info.accessToken.id,
+        'Reset_Link': app.get('frontend_url') + '/reset/' + info.accessToken.id,
       },
       from: {
         name: 'Beerless',

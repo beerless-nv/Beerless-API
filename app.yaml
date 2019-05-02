@@ -6,7 +6,10 @@ service: default
 
 # The settings below are to reduce costs during testing and not appropriate for production use.
 # You would obviously want to increase the values for computing resources and look into auto scaling when running production workloads.
-  
+
+env_variables:
+  NODE_ENV: production
+
 basic_scaling:
   max_instances: 1
 
