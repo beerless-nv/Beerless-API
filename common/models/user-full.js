@@ -3,6 +3,8 @@
 const LoopBackContext = require('loopback-context');
 require('custom-env').env(true);
 const app = require('./../../server/server');
+var sendgrid = require("@sendgrid/mail");
+const uuidv1 = require('uuid/v1');
 
 module.exports = function(Userfull) {
   /**
@@ -91,6 +93,39 @@ module.exports = function(Userfull) {
   Userfull.afterRemote('create', async function(ctx, modelInstance, next) {
     const userId = ctx.result.id;
 
+    ctx.result.verificationToken = uuidv1();
+
+    Userfull.upsert(ctx.result, function(result, err) {
+      if (err) {
+        return err;
+      }
+    });
+
+    sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+
+    const email = {
+      to: {
+        email: ctx.result.email
+      },
+      dynamic_template_data: {
+        'Sender_Name': 'Beerless',
+        'Sender_Address': 'Kempische Steenweg 293',
+        'Sender_City': 'Hasselt',
+        'Sender_Zip': '3500',
+        'Sender_Country': 'Belgium',
+        'Verify_Link': 'https://api.beerless.be/api/user' + '/confirm?uid=' + ctx.result.id + '&token=' + ctx.result.verificationToken,
+      },
+      from: {
+        name: 'Beerless',
+        email: process.env.NOREPLY_EMAIL
+      },
+      subject: 'Registration to Beerless',
+      text: 'Registration',
+      templateId: 'd-fb34204de2a34eb29cacd385b57433d0',
+    };
+
+    sendgrid.send(email);
+
     const roleMappingObject = {
       'principalType': 'USER',
       'principalId': userId,
@@ -103,11 +138,6 @@ module.exports = function(Userfull) {
   });
 
   Userfull.on('resetPasswordRequest', function(info) {
-    console.log(info.email);
-    console.log(info.accessToken);
-    console.log(app.get('frontend_url'));
-
-    var sendgrid = require("@sendgrid/mail");
     sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
     const email = {
@@ -118,14 +148,13 @@ module.exports = function(Userfull) {
         'Sender_Name': 'Beerless',
         'Sender_Address': 'Kempische Steenweg 293',
         'Sender_City': 'Hasselt',
-        'Sender_State': '',
         'Sender_Zip': '3500',
         'Sender_Country': 'Belgium',
         'Reset_Link': app.get('frontend_url') + '/reset/' + info.accessToken.id,
       },
       from: {
         name: 'Beerless',
-        email: 'info@beerless.be'
+        email: process.env.NOREPLY_EMAIL
       },
       subject: 'Reset password',
       text: 'Forgotton your password?',
@@ -133,6 +162,10 @@ module.exports = function(Userfull) {
     };
 
     sendgrid.send(email);
+  });
+
+  Userfull.afterRemote('reset-password', function(data) {
+    console.log(data);
 
   })
 };
