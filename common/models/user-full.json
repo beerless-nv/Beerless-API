@@ -124,6 +124,11 @@
       },
       "through": "Activity"
     },
+    "accessToken": {
+      "type": "hasMany",
+      "model": "AccessToken",
+      "foreignKey": "userId"
+    },
     "tastingprofiles": {
       "type": "hasMany",
       "model": "Tastingprofile",

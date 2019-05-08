@@ -3,7 +3,7 @@
 const LoopBackContext = require('loopback-context');
 require('custom-env').env(true);
 const app = require('./../../server/server');
-var sendgrid = require("@sendgrid/mail");
+var sendgrid = require('@sendgrid/mail');
 const uuidv1 = require('uuid/v1');
 
 module.exports = function(Userfull) {
@@ -34,26 +34,37 @@ module.exports = function(Userfull) {
   });
 
   /**
-   * getAll users function
+   * Check if accessToken of current user is still valid.
+   * Remove accessToken if not.
    *
-   * Makes sure there is no personal and restricted info in the response.
-   *
+   * @param req
    * @returns {Promise<void>}
    */
-  Userfull.getAll = async function() {
-    let users = await Userfull.find();
+  Userfull.checkToken = async function(token) {
+    if (!token) {
+      return false;
+    }
 
-    users.forEach(function(user) {
-      user.email = null;
-      user.emailVerified = null;
-    });
+    const accessToken = await Userfull.app.models.AccessToken.findById(token.accessToken);
 
-    return users;
+    if (accessToken) {
+      const expireDate = Date.parse(accessToken.created) + (accessToken.ttl * 1000);
+      if (expireDate < Date.now()) {
+        Userfull.app.models.AccessToken.deleteById(accessToken.id);
+        return false;
+      }
+      return true;
+    }
+
+    return false;
   };
 
-  Userfull.remoteMethod('getAll', {
-    returns: {type: 'object', root: true},
-    http: {path: '/getAll', verb: 'get'},
+  Userfull.remoteMethod('checkToken', {
+    accepts: [
+      {arg: 'token', type: 'object', root: true},
+    ],
+    returns: {type: 'boolean', root: true},
+    http: {path: '/checkToken', verb: 'get'},
   });
 
   /**
@@ -105,7 +116,7 @@ module.exports = function(Userfull) {
 
     const email = {
       to: {
-        email: ctx.result.email
+        email: ctx.result.email,
       },
       dynamic_template_data: {
         'Sender_Name': 'Beerless',
@@ -113,11 +124,11 @@ module.exports = function(Userfull) {
         'Sender_City': 'Hasselt',
         'Sender_Zip': '3500',
         'Sender_Country': 'Belgium',
-        'Verify_Link': 'https://api.beerless.be/api/user' + '/confirm?uid=' + ctx.result.id + '&token=' + ctx.result.verificationToken,
+        'Verify_Link': app.get('frontend_url') + '/confirm?uid=' + ctx.result.id + '&token=' + ctx.result.verificationToken,
       },
       from: {
         name: 'Beerless',
-        email: process.env.NOREPLY_EMAIL
+        email: process.env.NOREPLY_EMAIL,
       },
       subject: 'Registration to Beerless',
       text: 'Registration',
@@ -126,6 +137,7 @@ module.exports = function(Userfull) {
 
     sendgrid.send(email);
 
+    // user role is blocked (roleId: 1) before release
     const roleMappingObject = {
       'principalType': 'USER',
       'principalId': userId,
@@ -142,7 +154,7 @@ module.exports = function(Userfull) {
 
     const email = {
       to: {
-        email: info.email
+        email: info.email,
       },
       dynamic_template_data: {
         'Sender_Name': 'Beerless',
@@ -154,7 +166,7 @@ module.exports = function(Userfull) {
       },
       from: {
         name: 'Beerless',
-        email: process.env.NOREPLY_EMAIL
+        email: process.env.NOREPLY_EMAIL,
       },
       subject: 'Reset password',
       text: 'Forgotton your password?',
@@ -164,8 +176,17 @@ module.exports = function(Userfull) {
     sendgrid.send(email);
   });
 
-  Userfull.afterRemote('reset-password', function(data) {
-    console.log(data);
+  Userfull.afterRemote('login', async function(info) {
+    // get all accessTokens from current user
+    const accessTokens = await Userfull.app.models.AccessToken.find({where: {userId: info.userId}});
 
-  })
+    // delete accessTokens which are expired
+    accessTokens.map(accessToken => {
+      const expireDate = Date.parse(accessToken.created) + (accessToken.ttl * 1000);
+      if (expireDate < Date.now()) {
+        Userfull.app.models.AccessToken.deleteById(accessToken.id);
+      }
+    });
+  });
+
 };
