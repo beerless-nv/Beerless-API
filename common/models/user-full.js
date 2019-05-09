@@ -102,21 +102,45 @@ module.exports = function(Userfull) {
    * entry to the database.
    */
   Userfull.afterRemote('create', async function(ctx, modelInstance, next) {
-    const userId = ctx.result.id;
-
     ctx.result.verificationToken = uuidv1();
 
-    Userfull.upsert(ctx.result, function(result, err) {
+    const user = await Userfull.upsert(ctx.result, function(result, err) {
+      console.log('result', result);
+      Userfull.sendVerificationEmail(ctx.result.id);
       if (err) {
         return err;
       }
     });
 
+
+
+    // user role is blocked by default (roleId: 1) before release
+    const roleMappingObject = {
+      'principalType': 'USER',
+      'principalId': ctx.result.id,
+      'roleId': 1,
+    };
+
+    Userfull.app.models.RoleMapping.create(roleMappingObject);
+
+    return ctx.result.id;
+  });
+
+  /**
+   * Send verification email to registered user.
+   *
+   * @param userId
+   * @returns {Promise<void>}
+   */
+  Userfull.sendVerificationEmail = async function(userId) {
+    // get user
+    const user = await Userfull.findById(userId);
+
     sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
     const email = {
       to: {
-        email: ctx.result.email,
+        email: user.email,
       },
       dynamic_template_data: {
         'Sender_Name': 'Beerless',
@@ -124,7 +148,9 @@ module.exports = function(Userfull) {
         'Sender_City': 'Hasselt',
         'Sender_Zip': '3500',
         'Sender_Country': 'Belgium',
-        'Verify_Link': app.get('frontend_url') + '/confirm?uid=' + ctx.result.id + '&token=' + ctx.result.verificationToken,
+        'To_FirstName': user.firstName,
+        'To_LastName': user.lastName,
+        'Verify_Link': app.get('frontend_url') + '/sign-up/confirm?uid=' + user.id + '&token=' + user.verificationToken,
       },
       from: {
         name: 'Beerless',
@@ -136,17 +162,14 @@ module.exports = function(Userfull) {
     };
 
     sendgrid.send(email);
+  };
 
-    // user role is blocked (roleId: 1) before release
-    const roleMappingObject = {
-      'principalType': 'USER',
-      'principalId': userId,
-      'roleId': 1,
-    };
-
-    Userfull.app.models.RoleMapping.create(roleMappingObject);
-
-    return userId;
+  Userfull.remoteMethod('sendVerificationEmail', {
+    accepts: [
+      {arg: 'userId', type: 'string', required: true},
+    ],
+    // returns: {type: 'boolean', root: true},
+    http: {path: '/sendVerificationEmail', verb: 'get'},
   });
 
   Userfull.on('resetPasswordRequest', function(info) {

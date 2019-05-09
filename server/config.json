@@ -19,5 +19,6 @@
     },
     "cors": false
   },
-  "frontend_url": "http://localhost:4200"
+  "frontend_url": "http://localhost:4200",
+  "recommendations_url": "https://europe-west1-beerless-scripts-1.cloudfunctions.net/beerless-recommendations"
 }
