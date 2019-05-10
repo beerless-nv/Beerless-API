@@ -112,8 +112,6 @@ module.exports = function(Userfull) {
       }
     });
 
-
-
     // user role is blocked by default (roleId: 1) before release
     const roleMappingObject = {
       'principalType': 'USER',
@@ -197,6 +195,27 @@ module.exports = function(Userfull) {
     };
 
     sendgrid.send(email);
+  });
+
+  /**
+   *
+   */
+  Userfull.beforeRemote('login', function(ctx, user, next) {
+    Userfull.find({where: {username: ctx.req.body.username}}, function(err, result) {
+      if (result[0]) {
+        Userfull.app.models.RoleMapping.find({where: {principalId: result[0]['id']}}, function(err, result) {
+          if (result[0]['roleId'] === 1) {
+            var error = new Error();
+            error.status = 401;
+            error.message = "We're still busy developing the Beerless platform. You can check out our roadmap to follow our progress.";
+            error.code = 'LOGIN_BLOCKED_DEVELOPMENT';
+            next(error);
+          } else {
+            next();
+          }
+        });
+      }
+    });
   });
 
   Userfull.afterRemote('login', async function(info) {
