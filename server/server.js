@@ -5,10 +5,17 @@ require('dotenv').config();
 var loopback = require('loopback');
 var boot = require('loopback-boot');
 var loopbackContext = require('loopback-context');
-
 var app = module.exports = loopback();
+// var session = require('express-session');
+// Passport configurators
+var PassportConfigurator = require('loopback-component-passport').PassportConfigurator;
+var passportConfigurator = new PassportConfigurator(app);
 
-// user context
+/**
+ *
+ * user context
+ *
+ */
 app.use(loopback.token());
 app.use(function(req, res, next) {
   if (!req.accessToken) return next();
@@ -22,7 +29,11 @@ app.use(function(req, res, next) {
   });
 });
 
-// access token
+/**
+ *
+ * access_token
+ *
+ */
 app.use(loopback.token({
   cookies: ['access_token'],
   headers: ['access_token', 'X-Access-Token'],
@@ -52,3 +63,36 @@ boot(app, __dirname, function(err) {
     app.start();
   }
 });
+
+/**
+ *
+ * providers.json file for social login
+ *
+ */
+// Enable http session
+// app.use(loopback.session({secret: 'keyboard cat'}));
+
+// Load the provider configurations
+var config = {};
+try {
+  config = require('./providers.json');
+} catch (err) {
+  console.error('Please configure your passport strategy in `providers.json`.');
+  console.error('Copy `providers.json.template` to `providers.json` and replace the clientID/clientSecret values with your own.');
+  process.exit(1);
+}
+// Initialize passport
+passportConfigurator.init();
+
+// Set up related models
+passportConfigurator.setupModels({
+  userModel: app.models.UserFull,
+  userIdentityModel: app.models.userIdentity,
+  userCredentialModel: app.models.userCredential,
+});
+// Configure passport strategies for third party auth providers
+for (var s in config) {
+  var c = config[s];
+  c.session = c.session !== false;
+  passportConfigurator.configureProvider(s, c);
+}

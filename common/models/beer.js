@@ -203,8 +203,8 @@ module.exports = function(Beer) {
     //variables
     const beers = await Beer.find({where: {isApproved: 1}});
     const chatbotId = '5c909b61ccc52e00050a6e76';
-    const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
-    const entityLabelId = '5cb587844648730006817311';
+    const baseUri = 'https://admin-api.oswald.ai/api/v1';
+    const entityLabelId = '5cda657629ba2e00052af19e';
     let data = [];
     let value = {};
     let synonyms = [];

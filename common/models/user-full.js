@@ -45,7 +45,7 @@ module.exports = function(Userfull) {
       return false;
     }
 
-    const accessToken = await Userfull.app.models.AccessToken.findById(token.accessToken);
+    const accessToken = await Userfull.app.models.AccessToken.findById(token);
 
     if (accessToken) {
       const expireDate = Date.parse(accessToken.created) + (accessToken.ttl * 1000);
@@ -61,7 +61,7 @@ module.exports = function(Userfull) {
 
   Userfull.remoteMethod('checkToken', {
     accepts: [
-      {arg: 'token', type: 'object', root: true},
+      {arg: 'token', type: 'string', root: true},
     ],
     returns: {type: 'boolean', root: true},
     http: {path: '/checkToken', verb: 'get'},
@@ -96,32 +96,45 @@ module.exports = function(Userfull) {
   });
 
   /**
-   * Extending user create method.
+   * This method is only triggered when users manually sign up.
    *
-   * This method gives new users a standard user role by adding a RoleMapping
-   * entry to the database.
+   * This after remote method sends a verification email.
    */
   Userfull.afterRemote('create', async function(ctx, modelInstance, next) {
     ctx.result.verificationToken = uuidv1();
 
     const user = await Userfull.upsert(ctx.result, function(result, err) {
-      console.log('result', result);
-      Userfull.sendVerificationEmail(ctx.result.id);
       if (err) {
         return err;
       }
+      Userfull.sendVerificationEmail(ctx.result.id);
     });
 
+    return ctx.result.id;
+  });
+
+  /**
+   * This method is executed with every create or findOrCreate.
+   *
+   * This method gives new users a standard user role by adding a RoleMapping
+   * entry to the database.
+   */
+  Userfull.observe('after save', function(ctx, next) {
     // user role is blocked by default (roleId: 1) before release
     const roleMappingObject = {
       'principalType': 'USER',
-      'principalId': ctx.result.id,
-      'roleId': 1,
+      'principalId': ctx['instance']['id'],
+      'roleId': 2,
     };
 
-    Userfull.app.models.RoleMapping.create(roleMappingObject);
-
-    return ctx.result.id;
+    Userfull.app.models.RoleMapping.create(roleMappingObject, function(err, result) {
+      if (result) {
+        next();
+      } else {
+        console.log(err);
+        next();
+      }
+    });
   });
 
   /**

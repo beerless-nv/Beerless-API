@@ -53,6 +53,10 @@
     "totalPoints": {
       "type": "number",
       "default": 0
+    },
+    "favouriteBeerId": {
+      "type": "number",
+      "default": 0
     }
   },
   "validations": [],
@@ -148,6 +152,22 @@
     "articles": {
       "type": "hasMany",
       "model": "Article",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "identities": {
+      "type": "hasMany",
+      "model": "userIdentity",
+      "foreignKey": "userId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "credentials": {
+      "type": "hasMany",
+      "model": "userCredential",
       "foreignKey": "userId",
       "options": {
         "nestRemoting": true

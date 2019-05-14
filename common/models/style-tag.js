@@ -30,8 +30,8 @@ module.exports = function (Styletag) {
     // variables
     const styletags = await Styletag.find({ where: { isApproved: 1 } });
     const chatbotId = '5c909b61ccc52e00050a6e76';
-    const baseUri = 'https://admin-api-acc.oswald.ai/api/v1';
-    const entityLabelId = '5cb6d8fed9480f0006127fb1';
+    const baseUri = 'https://admin-api.oswald.ai/api/v1';
+    const entityLabelId = '5cda657629ba2e00052af19f';
     let data = [];
     let value = {};
     let synonyms = [];
