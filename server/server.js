@@ -53,6 +53,15 @@ app.start = function() {
   });
 };
 
+app.get('/auth/facebook/callback', (req, res) => {
+  // console.log(res['req']);
+  let url = req.url; // url contains the code
+  let urs = req.usr; // user info.
+  // // You can set a cookie with the info you want. This can be the auth code, the user profile or a JWT generated in the same request.
+  // res.cookie('data', usr, {httpOnly: true});
+  // res.redirect('urlWebApplication');
+});
+
 // Bootstrap the application, configure models, datasources and middleware.
 // Sub-apps like REST API are mounted via boot scripts.
 boot(app, __dirname, function(err) {
@@ -69,13 +78,17 @@ boot(app, __dirname, function(err) {
  * providers.json file for social login
  *
  */
-// Enable http session
-// app.use(loopback.session({secret: 'keyboard cat'}));
-
 // Load the provider configurations
 var config = {};
 try {
-  config = require('./providers.json');
+  // get environment specific providers file
+  switch (app.get('env')) {
+    case 'development' :
+      config = require('./providers.json');
+      break;
+    default:
+      config = require('./providers.' + app.get('env') + '.json');
+  }
 } catch (err) {
   console.error('Please configure your passport strategy in `providers.json`.');
   console.error('Copy `providers.json.template` to `providers.json` and replace the clientID/clientSecret values with your own.');

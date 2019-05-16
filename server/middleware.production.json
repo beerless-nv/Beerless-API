@@ -41,6 +41,7 @@
   },
   "parse": {},
   "routes": {
+    "./middleware/passport-cookie-setter": {},
     "loopback#rest": {
       "paths": [
         "${restApiRoot}"

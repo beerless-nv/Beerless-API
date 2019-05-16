@@ -20,5 +20,6 @@
     "cors": false
   },
   "frontend_url": "https://app.beerless.be",
-  "recommendations_url": "https://europe-west1-beerless-scripts-1.cloudfunctions.net/beerless-recommendations"
+  "recommendations_url": "https://europe-west1-beerless-scripts-1.cloudfunctions.net/beerless-recommendations",
+  "starter_role": 1
 }

@@ -20,7 +20,9 @@ module.exports = function(Userfull) {
    * @returns {Promise<void>}
    */
   Userfull.getLoggedUser = async function(req) {
+    console.log(req.accessToken);
     if (req.accessToken) {
+      console.log(await Userfull.findById(req.accessToken.userId));
       return Userfull.findById(req.accessToken.userId);
     }
   };
@@ -37,7 +39,7 @@ module.exports = function(Userfull) {
    * Check if accessToken of current user is still valid.
    * Remove accessToken if not.
    *
-   * @param req
+   * @param token
    * @returns {Promise<void>}
    */
   Userfull.checkToken = async function(token) {
@@ -103,11 +105,11 @@ module.exports = function(Userfull) {
   Userfull.afterRemote('create', async function(ctx, modelInstance, next) {
     ctx.result.verificationToken = uuidv1();
 
-    const user = await Userfull.upsert(ctx.result, function(result, err) {
+    const user = await Userfull.upsert(ctx.result, function(err, user) {
       if (err) {
         return err;
       }
-      Userfull.sendVerificationEmail(ctx.result.id);
+      Userfull.sendVerificationEmail(user.id);
     });
 
     return ctx.result.id;
@@ -124,7 +126,7 @@ module.exports = function(Userfull) {
     const roleMappingObject = {
       'principalType': 'USER',
       'principalId': ctx['instance']['id'],
-      'roleId': 2,
+      'roleId': app.get('starter_role'),
     };
 
     Userfull.app.models.RoleMapping.create(roleMappingObject, function(err, result) {
@@ -218,7 +220,7 @@ module.exports = function(Userfull) {
       if (result[0]) {
         Userfull.app.models.RoleMapping.find({where: {principalId: result[0]['id']}}, function(err, result) {
           if (result[0]['roleId'] === 1) {
-            var error = new Error();
+            const error = new Error();
             error.status = 401;
             error.message = "We're still busy developing the Beerless platform. You can check out our roadmap to follow our progress.";
             error.code = 'LOGIN_BLOCKED_DEVELOPMENT';

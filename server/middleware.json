@@ -41,6 +41,7 @@
   },
   "parse": {},
   "routes": {
+    "./middleware/passport-cookie-setter": {},
     "./middleware/update-token": {},
     "loopback#rest": {
       "paths": [
