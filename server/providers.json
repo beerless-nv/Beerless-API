@@ -15,12 +15,13 @@
     ],
     "clientID": "719680298387454",
     "clientSecret": "badf34dd762f0ae829a01371269251a4",
-    "callbackURL": "http://localhost:4200/auth/facebook/callback",
+    "callbackURL": "/auth/facebook/callback",
     "authPath": "/auth/facebook",
-    "callbackPath": "http://localhost:4200/auth/facebook/callback",
-    "successRedirect": "http://localhost:4200/search",
+    "callbackPath": "/auth/facebook/callback",
+    "successRedirect": "/auth/passport/redirect",
     "failureRedirect": "http://localhost:4200/sign-in",
     "scope": ["email"],
+    "proxy": true,
     "failureFlash": true
   },
   "facebook-link": {
@@ -46,6 +47,7 @@
     "failureRedirect": "http://localhost:4200/sign-in",
     "scope": ["email", "user_likes"],
     "link": true,
+    "proxy": true,
     "failureFlash": true
   },
   "google-login": {
@@ -57,12 +59,13 @@
     "callbackURL": "/auth/google/callback",
     "authPath": "/auth/google",
     "callbackPath": "/auth/google/callback",
-    "successRedirect": "http://localhost:4200/search",
+    "successRedirect": "/auth/passport/redirect",
     "failureRedirect": "http://localhost:4200/sign-in",
     "scope": [
       "email",
       "profile"
     ],
+    "proxy": true,
     "failureFlash": true
   },
   "google-link": {
@@ -81,6 +84,7 @@
       "profile"
     ],
     "link": true,
+    "proxy": true,
     "failureFlash": true
   }
 }

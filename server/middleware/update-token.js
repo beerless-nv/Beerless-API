@@ -1,5 +1,7 @@
 'use strict';
 
+const app = require('./../../server/server');
+
 module.exports = function() {
   // Sliding expiration of access tokens
   return function updateToken(req, res, next) {
@@ -17,6 +19,7 @@ module.exports = function() {
 
     // performance optimization, we do not update the token more often than once per day
     if (now.getTime() - token.created.getTime() < 86400000) return next();
+
     token.updateAttribute('created', now, next); // save to db and move on
   };
 };

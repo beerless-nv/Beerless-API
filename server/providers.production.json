@@ -18,7 +18,7 @@
     "callbackURL": "/auth/facebook/callback",
     "authPath": "/auth/facebook",
     "callbackPath": "/auth/facebook/callback",
-    "successRedirect": "https://app.beerless.be/search",
+    "successRedirect": "/auth/passport/redirect",
     "failureRedirect": "https://app.beerless.be/sign-in",
     "scope": ["email"],
     "proxy": true,
@@ -46,8 +46,8 @@
     "successRedirect": "https://app.beerless.be/search",
     "failureRedirect": "https://app.beerless.be/sign-in",
     "scope": ["email", "user_likes"],
-    "proxy": true,
     "link": true,
+    "proxy": true,
     "failureFlash": true
   },
   "google-login": {
@@ -59,7 +59,7 @@
     "callbackURL": "/auth/google/callback",
     "authPath": "/auth/google",
     "callbackPath": "/auth/google/callback",
-    "successRedirect": "https://app.beerless.be/search",
+    "successRedirect": "/auth/passport/redirect",
     "failureRedirect": "https://app.beerless.be/sign-in",
     "scope": [
       "email",

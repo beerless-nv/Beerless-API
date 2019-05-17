@@ -6,7 +6,7 @@ var loopback = require('loopback');
 var boot = require('loopback-boot');
 var loopbackContext = require('loopback-context');
 var app = module.exports = loopback();
-// var session = require('express-session');
+var cookieParser = require('cookie-parser');
 // Passport configurators
 var PassportConfigurator = require('loopback-component-passport').PassportConfigurator;
 var passportConfigurator = new PassportConfigurator(app);
@@ -42,8 +42,8 @@ app.use(loopback.token({
 
 app.start = function() {
   // start the web server
-  return app.listen(function() {
-    app.emit('started');
+  var server = app.listen(function() {
+    app.emit('started', server);
     var baseUrl = app.get('url').replace(/\/$/, '');
     console.log('Web server listening at: %s', baseUrl);
     if (app.get('loopback-component-explorer')) {
@@ -51,15 +51,54 @@ app.start = function() {
       console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
     }
   });
+  var io = require('socket.io').listen(server);
+  return server;
 };
 
-app.get('/auth/facebook/callback', (req, res) => {
-  // console.log(res['req']);
-  let url = req.url; // url contains the code
-  let urs = req.usr; // user info.
-  // // You can set a cookie with the info you want. This can be the auth code, the user profile or a JWT generated in the same request.
-  // res.cookie('data', usr, {httpOnly: true});
-  // res.redirect('urlWebApplication');
+app.set('trust proxy', 'loopback');
+app.middleware('auth', loopback.token());
+app.use(cookieParser('test'));
+app.get('/auth/passport/redirect', (req, res, next) => {
+  // return if access_token is undefined
+  if (!req.signedCookies.access_token) {
+    res.redirect(app.get('frontend_url') + '/sign-in');
+    return;
+  }
+
+  // get accessToken from db and set cookie
+  app.models.AccessToken.findById(req.signedCookies.access_token, function(err, accessToken) {
+    if (!accessToken) {
+      res.redirect(app.get('frontend_url') + '/sign-in');
+      return;
+    }
+
+    // check role of current user
+    app.models.RoleMapping.find({where: {principalId: accessToken.userId}}, function(err, role) {
+      if (err || !role[0]) {
+        res.redirect(app.get('frontend_url') + '/sign-in');
+        return;
+      }
+      if (role[0].roleId === 1) {
+        res.redirect(app.get('frontend_url') + '/sign-in?social-sign-in-error=user-blocked');
+        return;
+      }
+
+      // set access_token and userId cookies
+      const expireDate = Date.parse(accessToken.created) + (accessToken.ttl * 1000);
+      const currentDate = Date.parse(new Date(Date.now()));
+      const ttl = (expireDate - currentDate) / 1000;
+
+      res.header({
+        'Set-Cookie': [
+          'access_token=' + req.signedCookies.access_token + '; Max-Age=' + ttl + '; Path=/; Domain=' + app.get('domain') + ';',
+          'userId=' + req.signedCookies.userId + '; Max-Age=' + ttl + '; Path=/; Domain=' + app.get('domain') + ';',
+        ],
+      });
+
+      res.redirect(app.get('frontend_url'));
+      return;
+    });
+  });
 });
 
 // Bootstrap the application, configure models, datasources and middleware.

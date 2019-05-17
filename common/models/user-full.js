@@ -16,13 +16,12 @@ module.exports = function(Userfull) {
   /**
    * Returns logged in user
    *
-   * @param data
+   * @param req
+   * @param res
    * @returns {Promise<void>}
    */
   Userfull.getLoggedUser = async function(req) {
-    console.log(req.accessToken);
     if (req.accessToken) {
-      console.log(await Userfull.findById(req.accessToken.userId));
       return Userfull.findById(req.accessToken.userId);
     }
   };
@@ -43,22 +42,18 @@ module.exports = function(Userfull) {
    * @returns {Promise<void>}
    */
   Userfull.checkToken = async function(token) {
-    if (!token) {
+    if (!token) return false;
+
+    const accessToken = await Userfull.app.models.AccessToken.findById(token);
+    if (!accessToken) return false;
+
+    const expireDate = Date.parse(accessToken.created) + (accessToken.ttl * 1000);
+    if (expireDate < Date.now()) {
+      Userfull.app.models.AccessToken.deleteById(accessToken.id);
       return false;
     }
 
-    const accessToken = await Userfull.app.models.AccessToken.findById(token);
-
-    if (accessToken) {
-      const expireDate = Date.parse(accessToken.created) + (accessToken.ttl * 1000);
-      if (expireDate < Date.now()) {
-        Userfull.app.models.AccessToken.deleteById(accessToken.id);
-        return false;
-      }
-      return true;
-    }
-
-    return false;
+    return true;
   };
 
   Userfull.remoteMethod('checkToken', {
@@ -129,7 +124,7 @@ module.exports = function(Userfull) {
       'roleId': app.get('starter_role'),
     };
 
-    Userfull.app.models.RoleMapping.create(roleMappingObject, function(err, result) {
+    Userfull.app.models.RoleMapping.findOrCreate(roleMappingObject, function(err, result) {
       if (result) {
         next();
       } else {
@@ -222,7 +217,7 @@ module.exports = function(Userfull) {
           if (result[0]['roleId'] === 1) {
             const error = new Error();
             error.status = 401;
-            error.message = "We're still busy developing the Beerless platform. You can check out our roadmap to follow our progress.";
+            error.message = 'We\'re still busy developing the Beerless platform. You can check out our roadmap to follow our progress.';
             error.code = 'LOGIN_BLOCKED_DEVELOPMENT';
             next(error);
           } else {

@@ -36,6 +36,9 @@
     }
   },
   "session": {},
+  "auth": {
+    "loopback#token": {}
+  },
   "auth:after": {
     "./middleware/include-restrictions": {}
   },

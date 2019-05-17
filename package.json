@@ -16,6 +16,8 @@
     "child_process": "^1.0.2",
     "cls-hooked": "^4.2.2",
     "compression": "^1.0.3",
+    "cookie-parser": "^1.4.4",
+    "cookies": "^0.7.3",
     "cors": "^2.5.2",
     "custom-env": "^1.0.0",
     "docker": "^1.0.0",
@@ -36,6 +38,7 @@
     "passport-google-oauth": "^2.0.0",
     "python-shell": "^1.0.7",
     "serve-favicon": "^2.0.1",
+    "socket.io": "^2.2.0",
     "strong-error-handler": "^3.2.0",
     "uuid": "^3.3.2"
   },
