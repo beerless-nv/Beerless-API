@@ -22,6 +22,7 @@
     "custom-env": "^1.0.0",
     "docker": "^1.0.0",
     "dotenv": "^7.0.0",
+    "elasticsearch": "^16.0.0",
     "express-session": "^1.16.1",
     "fs": "0.0.1-security",
     "helmet": "^3.10.0",

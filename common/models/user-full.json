@@ -61,14 +61,6 @@
   },
   "validations": [],
   "relations": {
-    "userSocials": {
-      "type": "hasMany",
-      "model": "UserSocial",
-      "foreignKey": "userId",
-      "options": {
-        "nestRemoting": true
-      }
-    },
     "relationship_user1": {
       "type": "hasMany",
       "model": "Relationship",
@@ -101,7 +93,7 @@
         "nestRemoting": true
       }
     },
-    "beerActivity": {
+    "beerActivities": {
       "type": "hasMany",
       "model": "Beer",
       "foreignKey": "userId",
@@ -110,7 +102,7 @@
       },
       "through": "Activity"
     },
-    "articleActivity": {
+    "articleActivities": {
       "type": "hasMany",
       "model": "Article",
       "foreignKey": "userId",
@@ -119,7 +111,7 @@
       },
       "through": "Activity"
     },
-    "breweryActivity": {
+    "breweryActivities": {
       "type": "hasMany",
       "model": "Brewery",
       "foreignKey": "userId",
@@ -127,11 +119,6 @@
         "nestRemoting": true
       },
       "through": "Activity"
-    },
-    "accessToken": {
-      "type": "hasMany",
-      "model": "AccessToken",
-      "foreignKey": "userId"
     },
     "tastingprofiles": {
       "type": "hasMany",
@@ -172,7 +159,16 @@
       "options": {
         "nestRemoting": true
       }
-    }
+    },
+	"role": {
+	  "type": "hasMany",
+	  "model": "Role",
+	  "foreignKey": "principalId",
+	  "options": {
+        "nestRemoting": true
+      },
+	  "through": "RoleMapping"
+	}
   },
   "acls": [],
   "methods": {}
