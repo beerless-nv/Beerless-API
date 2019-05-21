@@ -11,6 +11,7 @@
     "posttest": "npm run lint"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.0.1",
     "@sendgrid/mail": "^6.3.1",
     "axios": "^0.18.0",
     "child_process": "^1.0.2",
@@ -22,10 +23,10 @@
     "custom-env": "^1.0.0",
     "docker": "^1.0.0",
     "dotenv": "^7.0.0",
-    "elasticsearch": "^16.0.0",
     "express-session": "^1.16.1",
     "fs": "0.0.1-security",
     "helmet": "^3.10.0",
+    "log4js": "^4.2.0",
     "loopback": "^3.22.0",
     "loopback-boot": "^2.6.5",
     "loopback-component-explorer": "^6.2.0",
@@ -40,6 +41,7 @@
     "python-shell": "^1.0.7",
     "serve-favicon": "^2.0.1",
     "socket.io": "^2.2.0",
+    "solr-node": "^1.2.1",
     "strong-error-handler": "^3.2.0",
     "uuid": "^3.3.2"
   },

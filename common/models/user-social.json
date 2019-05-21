@@ -24,11 +24,11 @@
     "socialPlatform": {
       "type": "string",
       "required": true,
-      "default": "null"
+      "default": null
     },
     "picture": {
       "type": "string",
-      "default": "null"
+      "default": null
     }
   },
   "validations": [],

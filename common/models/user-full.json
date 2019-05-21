@@ -24,31 +24,31 @@
     "realm": false,
     "firstName": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "lastName": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "picture": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "bio": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "country": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "province": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "place": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "totalPoints": {
       "type": "number",

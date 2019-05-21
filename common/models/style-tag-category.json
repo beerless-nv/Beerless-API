@@ -25,12 +25,12 @@
     "name": {
       "type": "string",
       "required": true,
-      "default": "null"
+      "default": null
     },
     "description": {
       "type": "string",
       "required": false,
-      "default": "null"
+      "default": null
     }
   },
   "validations": [],

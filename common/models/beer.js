@@ -3,6 +3,10 @@
 const LoopBackContext = require('loopback-context');
 const axios = require('axios');
 const app = require('./../../server/server');
+var {es} = require('./../../server/server');
+
+const {Client} = require('@elastic/elasticsearch');
+var es = new Client({node: 'http://localhost:9200'});
 
 module.exports = function(Beer) {
   /**
@@ -36,36 +40,75 @@ module.exports = function(Beer) {
       }
 
       // insert beer object in db
-      const beer = await Beer.create(data);
+      const beer = await Beer.create(data, function(err, beer) {
+        console.log(err);
+        console.log(beer);
 
-      // add activity for the insert
-      const activity = {
-        'timestampCreated': '1970-01-01T00:00:00.000Z',
-        'timestampUpdated': '1970-01-01T00:00:00.000Z',
-        'breweryId': 0,
-        'beerId': beer.id,
-        'articleId': 0,
-        'userId': userId,
-        'activityTypeId': activityTypeId,
-        'originalId': beerId,
-        'isApproved': 0,
-      };
+        if (!err) {
+          // add activity for the insert
+          const activity = {
+            'timestampCreated': '1970-01-01T00:00:00.000Z',
+            'timestampUpdated': '1970-01-01T00:00:00.000Z',
+            'breweryId': 0,
+            'beerId': beer['id'],
+            'articleId': 0,
+            'userId': userId,
+            'activityTypeId': activityTypeId,
+            'originalId': beerId,
+            'isApproved': 0,
+          };
+          Beer.app.models.Activity.create(activity);
 
-      Beer.app.models.Activity.create(activity);
+          // insert breweries
 
-      return beer;
+          // insert beerstyle
+          data.styleTags.map(styleTagId => {
+            Beer.app.models.StyleTag.findById(styleTagId, function(err, styleTag) {
+              if (styleTag) {
+                Beer.app.models.Beerstyle.create({
+                  beerId: beer['id'],
+                  styleTagId: styleTagId,
+                });
+              }
+            });
+          });
+        }
+      });
+
+      console.log(beer);
+
+      return data;
     }
   };
 
   Beer.remoteMethod('beerEntry', {
-    accepts: {
-      arg: 'data',
-      type: 'object',
-      http: {source: 'body'},
-      required: true,
-    },
+    accepts: [
+      {arg: 'data', type: 'object', http: {source: 'body'}, required: true},
+    ],
     http: {path: '/beerEntry', verb: 'post'},
     returns: {type: 'object', root: true},
+  });
+
+  Beer.observe('after save', function(ctx, next) {
+    // Get styletags
+    Beer.findById(ctx.instance.id, {include: ['styleTags', 'breweries']}, function(err, beer) {
+      if (beer) {
+
+        console.log(beer);
+
+        // create elasticSearch object
+        if (!err) {
+
+          // solrClient.update(data, function(err, result) {
+          //   if (err) {
+          //     console.log(err);
+          //     return;
+          //   }
+          //   console.log('Response:', result.responseHeader);
+          // });
+        }
+      }
+    });
   });
 
   /**
@@ -99,7 +142,14 @@ module.exports = function(Beer) {
             for (const recommendation of response.data) {
 
               // check if beer exists
-              const beer = await Beer.findById(recommendation.beerId, {fields: {id: true, name: true, logo: true}});
+              const beer = await Beer.findById(recommendation.beerId, {
+                fields: {
+                  id: true,
+                  name: true,
+                  logo: true,
+                  description: true,
+                },
+              });
               if (beer) {
                 console.log('ok');
                 // make recommendation objects and add it to the array
@@ -146,39 +196,26 @@ module.exports = function(Beer) {
    * @param data
    * @returns {Promise<void>}
    */
-  Beer.search = async function(data, next) {
-    console.log(data);
-    if (data === 'ok') {
-      const err = new Error();
-      err.statusCode = 401;
-      err.message = 'Authorization Required';
-      err.code = 'AUTHORIZATION_REQUIRED';
-      next(err);
-      return;
-    }
-    // Beer.find({where: })
+  Beer.search = async function(q) {
+    const result = await es.search({
+      index: 'beerless',
+      body: {
+        query: {
+          fuzzy: {
+            name: 'vlie',
+          },
+        },
+      },
+      from: 0,
+      size: 10,
+    });
 
-    // // create sql query
-    // const query = 'SELECT * FROM Beer WHERE name COLLATE UTF8_GENERAL_CI like ?';
-    //
-    // // define datasource
-    // const ds = Beer.dataSource;
-    //
-    // // execute query on database
-    // const beers = await new Promise(resolve => {
-    //   ds.connector.query(query, ['%' + data + '%'], function(err, result) {
-    //     // console.log(result[0].name);
-    //     resolve(JSON.parse(JSON.stringify(result)));
-    //   });
-    // });
-    //
-    // console.log(beers);
-
-    // return beers;
+    console.log(result.body.hits.hits);
+    return result;
   };
 
   Beer.remoteMethod('search', {
-    accepts: {arg: 'value', type: 'string', required: true},
+    accepts: {arg: 'q', type: 'string', required: true},
     http: {path: '/search', verb: 'get'},
     returns: {type: 'object', root: true},
   });
@@ -297,5 +334,45 @@ module.exports = function(Beer) {
     ],
     http: {path: '/beerFromBreweryByName', verb: 'get'},
     returns: {type: 'array', root: true},
+  });
+
+  Beer.loadBeersToES = async function() {
+    await es.indices.create({
+      index: 'beer',
+      body: {
+        mappings: {
+          properties: {
+            name: {type: 'text'},
+            id: {type: 'text'},
+            name_suggest: {
+              type: 'completion',
+            },
+          },
+        },
+      },
+    }, async function(err, resp) {
+      console.log(err);
+      console.log(resp);
+      if (resp) {
+        await Beer.findById(643, async function(err, beer) {
+          if (beer) {
+            const result = await es.create({
+              index: 'beer',
+              body: beer,
+              id: beer['id']
+            });
+
+            console.log(result);
+          }
+        });
+      }
+    });
+
+    return true;
+  };
+
+  Beer.remoteMethod('loadBeersToES', {
+    http: {path: '/loadBeersToES', verb: 'get'},
+    returns: {type: 'boolean', root: true},
   });
 };

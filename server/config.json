@@ -22,5 +22,6 @@
   "frontend_url": "http://localhost:4200",
   "recommendations_url": "https://europe-west1-beerless-scripts-1.cloudfunctions.net/beerless-recommendations",
   "starter_role": 1,
-  "domain": "localhost"
+  "domain": "localhost",
+  "elasticSearch_host": "http://localhost:8000/search"
 }

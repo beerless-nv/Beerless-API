@@ -22,5 +22,6 @@
   "frontend_url": "https://app.beerless.be",
   "recommendations_url": "https://europe-west1-beerless-scripts-1.cloudfunctions.net/beerless-recommendations",
   "starter_role": 1,
-  "domain": ".beerless.be"
+  "domain": ".beerless.be",
+  "elasticSearch_host": "https://api.beerless.be/search"
 }

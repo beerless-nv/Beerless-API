@@ -19,7 +19,7 @@
     "name": {
       "type": "string",
       "required": true,
-      "default": "null"
+      "default": null
     },
     "ABV": {
       "type": "number",
@@ -44,27 +44,27 @@
     "fermentation": {
       "type": "string",
       "required": false,
-      "default": "null"
+      "default": null
     },
     "glass": {
       "type": "string",
       "required": false,
-      "default": "null"
+      "default": null
     },
     "logo": {
       "type": "string",
       "required": false,
-      "default": "null"
+      "default": "beer-no-logo.svg"
     },
     "description": {
       "type": "string",
       "required": false,
-      "default": "null"
+      "default": null
     },
     "season": {
       "type": "string",
       "required": false,
-      "default": "null"
+      "default": null
     },
     "since": {
       "type": "number",

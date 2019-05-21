@@ -18,19 +18,19 @@
   "properties": {
     "website": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "twitter": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "facebook": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "instagram": {
       "type": "string",
-      "default": "null"
+      "default": null
     }
   },
   "validations": [],

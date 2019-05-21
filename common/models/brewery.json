@@ -19,35 +19,35 @@
     "name": {
       "type": "string",
       "required": true,
-      "default": "null"
+      "default": null
     },
     "description": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "country": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "province": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "place": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "postcode": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "streetAndNumber": {
       "type": "string",
-      "default": "null"
+      "default": null
     },
     "logo": {
       "type": "string",
-      "default": "null"
+      "default": "beer-no-logo.svg"
     },
     "isApproved": {
       "type": "number",
