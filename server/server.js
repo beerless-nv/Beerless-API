@@ -148,27 +148,3 @@ for (var s in config) {
   c.session = c.session !== false;
   passportConfigurator.configureProvider(s, c);
 }
-
-/**
- * Elastic Search
- */
-
-// es.info(console.log);
-// module.exports = {es: es};
-
-/**
- * Solr
- */
-// // Require module
-// var SolrNode = require('solr-node');
-//
-// // Create client
-// var solrClient = new SolrNode({
-//   host: '127.0.0.1',
-//   port: '9200',
-//   core: 'beerless',
-//   protocol: 'http',
-// });
-//
-// // Set logger level (can be set to DEBUG, INFO, WARN, ERROR, FATAL or OFF)
-// require('log4js').getLogger('solr-node').level = 'DEBUG';

@@ -191,36 +191,6 @@ module.exports = function(Beer) {
   });
 
   /**
-   * Beer search method
-   *
-   * @param data
-   * @returns {Promise<void>}
-   */
-  Beer.search = async function(q) {
-    const result = await es.search({
-      index: 'beerless',
-      body: {
-        query: {
-          fuzzy: {
-            name: 'vlie',
-          },
-        },
-      },
-      from: 0,
-      size: 10,
-    });
-
-    console.log(result.body.hits.hits);
-    return result;
-  };
-
-  Beer.remoteMethod('search', {
-    accepts: {arg: 'q', type: 'string', required: true},
-    http: {path: '/search', verb: 'get'},
-    returns: {type: 'object', root: true},
-  });
-
-  /**
    * Uploads all beers to the entitylabel beer_list in Oswald.
    *
    * @returns {Promise<boolean>}
@@ -336,14 +306,194 @@ module.exports = function(Beer) {
     returns: {type: 'array', root: true},
   });
 
-  Beer.loadBeersToES = async function() {
+  /**
+   * Beer search method (ElasticSearch)
+   *
+   * @param q
+   * @param from
+   * @param size
+   * @returns {Promise<void>}
+   */
+  Beer.search = async function(q, from, size) {
+    if (!q) return null;
+    if (from !== 0) {
+      if (!from) return null;
+    }
+    if (!size) return null;
+
+    const result = await es.search({
+      index: 'beers',
+      body: {
+        query: {
+          match: {
+            name: q,
+          },
+        },
+      },
+      from: from,
+      size: size,
+    });
+
+    return result.body.hits;
+  };
+
+  Beer.remoteMethod('search', {
+    accepts: [
+      {arg: 'q', type: 'string', required: true},
+      {arg: 'from', type: 'number', required: true},
+      {arg: 'size', type: 'number', required: true},
+    ],
+    http: {path: '/search', verb: 'get'},
+    returns: {type: 'object', root: true},
+  });
+
+  /**
+   * Beer search suggestion method (ElasticSearch)
+   *
+   * @param q
+   * @param size
+   * @returns {Promise<void>}
+   */
+  Beer.suggest = async function(q, size) {
+    if (!q) return null;
+    if (!size) return null;
+
+    const result = await es.search({
+      index: 'beers',
+      body: {
+        suggest: {
+          'suggest-beer': {
+            text: q,
+            completion: {
+              field: 'name_suggest',
+              skip_duplicates: true,
+              size: size
+            },
+          },
+        },
+      }
+    });
+
+    return result.body.suggest['suggest-beer'][0]['options'];
+  };
+
+  Beer.remoteMethod('suggest', {
+    accepts: [
+      {arg: 'q', type: 'string', required: true},
+      {arg: 'size', type: 'number', required: true},
+    ],
+    http: {path: '/suggest', verb: 'get'},
+    returns: {type: 'object', root: true},
+  });
+
+  /**
+   *
+   * Load all beers to ElasticSearch.
+   *
+   * @returns {Promise<boolean>}
+   */
+  Beer.loadAllBeersToES = async function() {
+    await Beer.find({include: ['breweries', 'styleTags']}, async function(err, beers) {
+      if (beers) {
+        beers.map(async beer => {
+          if (beer['isApproved'] === 1) {
+            beer['name_suggest'] = beer['name'];
+
+            await es.create({
+              index: 'beers',
+              body: beer,
+              id: beer['id'],
+            }, function(err, resp) {
+              if (err) return false;
+              if (resp) return true;
+            });
+          }
+        });
+      }
+    });
+  };
+
+  Beer.remoteMethod('loadAllBeersToES', {
+    http: {path: '/loadAllBeersToES', verb: 'get'},
+    returns: {type: 'boolean', root: true},
+  });
+
+  /**
+   * Load single beer to ElasticSearch.
+   *
+   * @param beer
+   * @returns {Promise<void>}
+   */
+  Beer.loadBeerToEs = async function(beer) {
+    if (!beer) return false;
+
+    beer['name_suggest'] = beer['name'];
+
+    await es.create({
+      index: 'beers',
+      body: beer,
+      id: beer['id'],
+    }, function(err, resp) {
+      if (err) return false;
+      if (resp) return true;
+    });
+  };
+
+  Beer.remoteMethod('loadBeerToEs', {
+    accepts: [
+      {arg: 'beer', type: 'object', http: {source: 'body'}, required: true},
+    ],
+    http: {path: '/loadBeerToEs', verb: 'post'},
+    returns: {type: 'boolean', root: true},
+  });
+
+  /**
+   * Delete beer from ElasticSearch.
+   *
+   * @param beerId
+   * @returns {Promise<void>}
+   */
+  Beer.deleteBeerEs = async function(beerId) {
+    if (!beerId) return false;
+
+    await es.delete({
+      index: 'beers',
+      id: beerId,
+    }, function(err, resp) {
+      if (err) return false;
+      if (resp) return true;
+    });
+  };
+
+  Beer.remoteMethod('deleteBeerEs', {
+    accepts: [
+      {arg: 'beerId', type: 'number', required: true},
+    ],
+    http: {path: '/deleteBeerEs', verb: 'get'},
+    returns: {type: 'boolean', root: true},
+  });
+
+  /**
+   * Create index in ElasticSearch
+   *
+   * @returns {Promise<void>}
+   */
+  Beer.createIndexES = async function() {
+    // delete previous index
+    await es.indices.delete({index: 'beers'}, function(err, resp) {
+      console.log(err);
+      console.log(resp);
+    });
+
+    // create new index
     await es.indices.create({
-      index: 'beer',
+      index: 'beers',
       body: {
         mappings: {
           properties: {
-            name: {type: 'text'},
-            id: {type: 'text'},
+            ABV: {
+              type: 'float',
+            },
             name_suggest: {
               type: 'completion',
             },
@@ -351,28 +501,13 @@ module.exports = function(Beer) {
         },
       },
     }, async function(err, resp) {
-      console.log(err);
-      console.log(resp);
-      if (resp) {
-        await Beer.findById(643, async function(err, beer) {
-          if (beer) {
-            const result = await es.create({
-              index: 'beer',
-              body: beer,
-              id: beer['id']
-            });
-
-            console.log(result);
-          }
-        });
-      }
+      if (err) return false;
+      if (resp) return true;
     });
-
-    return true;
   };
 
-  Beer.remoteMethod('loadBeersToES', {
-    http: {path: '/loadBeersToES', verb: 'get'},
+  Beer.remoteMethod('createIndexES', {
+    http: {path: '/createIndexES', verb: 'get'},
     returns: {type: 'boolean', root: true},
   });
 };

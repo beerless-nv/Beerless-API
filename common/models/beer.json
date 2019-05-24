@@ -23,6 +23,7 @@
     },
     "ABV": {
       "type": "number",
+      "dataType": "decimal",
       "required": true,
       "default": 0
     },
