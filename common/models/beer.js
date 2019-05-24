@@ -3,10 +3,6 @@
 const LoopBackContext = require('loopback-context');
 const axios = require('axios');
 const app = require('./../../server/server');
-var {es} = require('./../../server/server');
-
-const {Client} = require('@elastic/elasticsearch');
-var es = new Client({node: 'http://localhost:9200'});
 
 module.exports = function(Beer) {
   /**
@@ -367,11 +363,11 @@ module.exports = function(Beer) {
             completion: {
               field: 'name_suggest',
               skip_duplicates: true,
-              size: size
+              size: size,
             },
           },
         },
-      }
+      },
     });
 
     return result.body.suggest['suggest-beer'][0]['options'];
@@ -479,30 +475,33 @@ module.exports = function(Beer) {
    * @returns {Promise<void>}
    */
   Beer.createIndexES = async function() {
+    console.log('ok index');
     // delete previous index
-    await es.indices.delete({index: 'beers'}, function(err, resp) {
-      console.log(err);
-      console.log(resp);
-    });
+    await es.indices.exists({index: 'beers'}, async function(err, resp) {
+      if (resp.statusCode === 200) {
+        await es.indices.delete({index: 'beers'}, function(err, resp) {
+        });
+      }
 
-    // create new index
-    await es.indices.create({
-      index: 'beers',
-      body: {
-        mappings: {
-          properties: {
-            ABV: {
-              type: 'float',
-            },
-            name_suggest: {
-              type: 'completion',
+      // create new index
+      await es.indices.create({
+        index: 'beers',
+        body: {
+          mappings: {
+            properties: {
+              ABV: {
+                type: 'float',
+              },
+              name_suggest: {
+                type: 'completion',
+              },
             },
           },
         },
-      },
-    }, async function(err, resp) {
-      if (err) return false;
-      if (resp) return true;
+      }, async function(err, resp) {
+        if (err) return false;
+        if (resp) return true;
+      });
     });
   };
 

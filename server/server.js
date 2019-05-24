@@ -148,3 +148,14 @@ for (var s in config) {
   c.session = c.session !== false;
   passportConfigurator.configureProvider(s, c);
 }
+
+/**
+ *
+ * Elastic Search
+ *
+ */
+const {Client} = require('@elastic/elasticsearch');
+global.es = new Client({
+  node: app.get('elasticSearch_host'),
+});
+// module.exports = es;

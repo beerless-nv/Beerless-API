@@ -1,11 +1,8 @@
 'use strict';
 
 const axios = require('axios');
-
-const {Client} = require('@elastic/elasticsearch');
-var es = new Client({node: 'http://localhost:9200'});
-
 const LoopBackContext = require('loopback-context');
+
 module.exports = function(Brewery) {
   /**
    * Validation

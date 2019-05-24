@@ -31,6 +31,7 @@
     "loopback-boot": "^2.6.5",
     "loopback-component-explorer": "^6.2.0",
     "loopback-component-passport": "^3.10.0",
+    "loopback-connector-es": "1.4.1",
     "loopback-connector-mysql": "^5.3.1",
     "loopback-context": "^3.4.0",
     "loopback-ds-timestamp-mixin": "^3.4.1",
