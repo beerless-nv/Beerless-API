@@ -12,6 +12,9 @@
  */
 module.exports = function(Model, properties) {
   Model.afterRemote('**', async function(ctx, data, next) {
+
+    console.log(Model.app._remotes.objectName);
+    console.log(ctx);
     // Assign default role in case no accessToken is used
     let role = '$everyone';
 
@@ -36,12 +39,20 @@ module.exports = function(Model, properties) {
           if (Array.isArray(data)) {
             data.map(item => {
               if (ctx.req.accessToken.userId !== item['id']) {
-                item.unsetAttribute(property);
+                try {
+                  item.unsetAttribute(property);
+                } catch (e) {
+
+                }
               }
             });
           } else {
             if (ctx.req.accessToken.userId !== data['id']) {
-              data.unsetAttribute(property);
+              try {
+                data.unsetAttribute(property);
+              } catch (e) {
+
+              }
             }
           }
         }
