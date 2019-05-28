@@ -17,7 +17,6 @@ module.exports = function(Userfull) {
    * Returns logged in user
    *
    * @param req
-   * @param res
    * @returns {Promise<void>}
    */
   Userfull.getLoggedUser = async function(req) {
@@ -208,10 +207,25 @@ module.exports = function(Userfull) {
   });
 
   /**
-   *
+   * Check if user has the right roles.
    */
   Userfull.beforeRemote('login', function(ctx, user, next) {
-    Userfull.find({where: {username: ctx.req.body.username}}, function(err, result) {
+    if (!ctx.req.body.username && !ctx.req.body.email) {
+      const error = new Error();
+      error.status = 401;
+      error.message = 'Enter a username or email!';
+      error.code = 'MISSING_USERNAME_OR_EMAIL';
+      next(error);
+    }
+
+    let params;
+    if (ctx.req.body.username) {
+      params = {where: {username: ctx.req.body.username}};
+    } else if (ctx.req.body.email) {
+      params = {where: {email: ctx.req.body.email}};
+    }
+
+    Userfull.find(params, function(err, result) {
       if (result[0]) {
         Userfull.app.models.RoleMapping.find({where: {principalId: result[0]['id']}}, function(err, result) {
           if (result[0]['roleId'] === 1) {
@@ -228,6 +242,7 @@ module.exports = function(Userfull) {
     });
   });
 
+  // delete expired accessTokens
   Userfull.afterRemote('login', async function(info) {
     // get all accessTokens from current user
     const accessTokens = await Userfull.app.models.AccessToken.find({where: {userId: info.userId}});
@@ -240,5 +255,25 @@ module.exports = function(Userfull) {
       }
     });
   });
+
+  //
+  Userfull.beforeRemote('setPassword', function(ctx, user, next) {
+    // console.log(ctx.req.body);
+    console.log(user);
+    if (!ctx.req.body) next();
+
+    Base.hasPassword(ctx.req.body.currentPassword, (err, isMatch) => {
+      if (err) next(err);
+      if (!isMatch) {
+        const err = new Error('Invalid current password');
+        Object.assign(err, {
+          code: 'INVALID_PASSWORD',
+          statusCode: 400,
+        });
+        next(err);
+      }
+      next();
+    });
+  })
 
 };

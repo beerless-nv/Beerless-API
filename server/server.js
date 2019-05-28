@@ -158,4 +158,3 @@ const {Client} = require('@elastic/elasticsearch');
 global.es = new Client({
   node: app.get('elasticSearch_host'),
 });
-// module.exports = es;

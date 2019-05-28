@@ -21,11 +21,11 @@ module.exports = function(Model, properties) {
     }
 
     // if accessToken is present, change role to the role of the user
-    if (ctx.req.accessToken) {
-      // get role from current user
-      const rolemappingId = (await Model.app.models.RoleMapping.find({where: {principalId: ctx.req.accessToken.userId}}))[0]['roleId'];
-      role = (await Model.app.models.Role.findById(rolemappingId))['name'];
-    }
+    if (!ctx.req.accessToken) return;
+
+    // get role from current user
+    const rolemappingId = (await Model.app.models.RoleMapping.find({where: {principalId: ctx.req.accessToken.userId}}))[0]['roleId'];
+    role = (await Model.app.models.Role.findById(rolemappingId))['name'];
 
     if (role !== 'Administrator') {
       // loop through all specified properties
@@ -35,24 +35,18 @@ module.exports = function(Model, properties) {
           // remove specified property from object
           if (Array.isArray(data)) {
             data.map(item => {
-              if (item.__data) {
-                delete item.__data[property];
-              } else {
-                delete item[property];
+              if (ctx.req.accessToken.userId !== item['id']) {
+                item.unsetAttribute(property);
               }
             });
           } else {
-            if (data.__data) {
-              delete data.__data[property];
-            } else {
-              delete data[property];
+            if (ctx.req.accessToken.userId !== data['id']) {
+              data.unsetAttribute(property);
             }
           }
         }
       }
     }
-
-    console.log(data);
 
     next();
   });
