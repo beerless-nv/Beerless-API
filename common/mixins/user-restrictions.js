@@ -12,9 +12,6 @@
  */
 module.exports = function(Model, properties) {
   Model.afterRemote('**', async function(ctx, data, next) {
-
-    console.log(Model.app._remotes.objectName);
-    console.log(ctx);
     // Assign default role in case no accessToken is used
     let role = '$everyone';
 
