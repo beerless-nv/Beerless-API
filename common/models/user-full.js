@@ -1,6 +1,5 @@
 'use strict';
 
-const LoopBackContext = require('loopback-context');
 require('custom-env').env(true);
 const app = require('./../../server/server');
 var sendgrid = require('@sendgrid/mail');

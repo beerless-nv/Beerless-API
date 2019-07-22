@@ -160,15 +160,15 @@
         "nestRemoting": true
       }
     },
-	"role": {
-	  "type": "hasMany",
-	  "model": "Role",
-	  "foreignKey": "principalId",
-	  "options": {
+    "role": {
+      "type": "hasMany",
+      "model": "Role",
+      "foreignKey": "principalId",
+      "options": {
         "nestRemoting": true
       },
-	  "through": "RoleMapping"
-	}
+      "through": "RoleMapping"
+    }
   },
   "acls": [],
   "methods": {}

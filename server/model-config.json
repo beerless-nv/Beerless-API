@@ -132,5 +132,13 @@
   "userIdentity": {
     "dataSource": "mysql-beerless",
     "public": true
+  },
+  "Email": {
+    "dataSource": "sendgrid",
+    "public": false
+  },
+  "mail": {
+    "dataSource": null,
+    "public": true
   }
 }

@@ -23,8 +23,8 @@
     },
     "ABV": {
       "type": "number",
-      "dataType": "decimal",
       "required": true,
+      "dataType": "decimal",
       "default": 0
     },
     "IBU": {
