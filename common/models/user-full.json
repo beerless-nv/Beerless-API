@@ -100,7 +100,8 @@
       "options": {
         "nestRemoting": true
       },
-      "through": "Activity"
+      "through": "Activity",
+      "keyThrough": "beerId"
     },
     "articleActivities": {
       "type": "hasMany",

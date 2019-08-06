@@ -9,102 +9,95 @@ module.exports = function(Beer) {
    * Validation
    */
   Beer.validatesPresenceOf('name', 'ABV');
-  Beer.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since', 'isApproved');
-  Beer.validatesUniquenessOf('name');
+  Beer.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since', 'statusId');
+  function beerNameValidator(err, done) {
+    Beer.find({where: {name: this.name}})
+      .then(result => {
+        console.log(result);
+        if (result.length > 0) err();
+        done();
+      });
+  }
 
   /**
    * User entries for beers
-   *
-   * @param data
-   * @returns {Promise<void>}
+   * Remote hooks for create method which is used both for new entries
+   * and update entries.
+   * The hooks set a statusId and create a new activity for the user.
    */
-  Beer.beerEntry = async function(data) {
-    // check if isApproved exists
-    if (!data['isApproved']) {
-      data['isApproved'] = 0;
+  Beer.beforeRemote('create', async function(ctx, modelInstance, next) {
+    const beer = ctx.req.body;
 
-      // get userId
-      const ctx = LoopBackContext.getCurrentContext();
-      const userId = (ctx && ctx.get('currentUser')).id;
+    // set statusId = 1 (pending) if entry from user
+    beer.statusId = 1;
 
-      // define activityType
-      let beerId = data['id'];
-      let activityTypeId = 1;
-      if (data['id']) {
-        data['id'] = null;
-        activityTypeId = 2;
-      }
-
-      // insert beer object in db
-      const beer = await Beer.create(data, function(err, beer) {
-        console.log(err);
-        console.log(beer);
-
-        if (!err) {
-          // add activity for the insert
-          const activity = {
-            'timestampCreated': '1970-01-01T00:00:00.000Z',
-            'timestampUpdated': '1970-01-01T00:00:00.000Z',
-            'breweryId': 0,
-            'beerId': beer['id'],
-            'articleId': 0,
-            'userId': userId,
-            'activityTypeId': activityTypeId,
-            'originalId': beerId,
-            'isApproved': 0,
-          };
-          Beer.app.models.Activity.create(activity);
-
-          // insert breweries
-
-          // insert beerstyle
-          data.styleTags.map(styleTagId => {
-            Beer.app.models.StyleTag.findById(styleTagId, function(err, styleTag) {
-              if (styleTag) {
-                Beer.app.models.Beerstyle.create({
-                  beerId: beer['id'],
-                  styleTagId: styleTagId,
-                });
-              }
-            });
-          });
-        }
-      });
-
-      console.log(beer);
-
-      return data;
-    }
-  };
-
-  Beer.remoteMethod('beerEntry', {
-    accepts: [
-      {arg: 'data', type: 'object', http: {source: 'body'}, required: true},
-    ],
-    http: {path: '/beerEntry', verb: 'post'},
-    returns: {type: 'object', root: true},
+    next();
   });
 
-  Beer.observe('after save', function(ctx, next) {
-    // Get styletags
-    Beer.findById(ctx.instance.id, {include: ['styleTags', 'breweries']}, function(err, beer) {
-      if (beer) {
+  Beer.afterRemote('create', async function(ctx, modalInstance, next) {
+    let activityTypeId;
 
-        console.log(beer);
+    // Chose activityType based on whether or not the originalId is entered
+    if (modalInstance.originalId === 0) {
+      activityTypeId = 1;
+      Beer.validateAsync('name', beerNameValidator, {message: 'is not unique'});
+    } else {
+      activityTypeId = 2;
+    }
 
-        // create elasticSearch object
-        if (!err) {
+    const activity = {
+      activityTypeId: activityTypeId,
+      userId: ctx.req.accessToken.userId,
+      articleId: 0,
+      beerId: modalInstance.id,
+      breweryId: 0,
+      statusId: 1
+    };
 
-          // solrClient.update(data, function(err, result) {
-          //   if (err) {
-          //     console.log(err);
-          //     return;
-          //   }
-          //   console.log('Response:', result.responseHeader);
-          // });
+    // Create pending activity
+    Beer.app.models.Activity.create(activity, next());
+  });
+
+  /**
+   * Remote hook for the approval system.
+   * The hook makes sure the entries from users are updated correctly and
+   * previous entries are archived.
+   */
+  Beer.afterRemote('replaceById', async function(ctx, modalInstance, next) {
+    switch (modalInstance.statusId) {
+      case 2:
+        // Update previous versions of the beer
+        if (modalInstance.originalId !== 0) {
+          const previousVersions = await Beer.find({where: {or: [{id: modalInstance.originalId}, {originalId: modalInstance.originalId}]}});
+
+          previousVersions.map(beer => {
+            if (beer.statusId !== 2 && beer.statusId !== 5 && beer.id !== modalInstance.id) {
+              beer.updateAttribute('statusId', 5, function(err, resp) {
+                if (err) {}
+                if (resp) {}
+              });
+            }
+          })
         }
-      }
-    });
+
+        // Upload beer to ElasticSearch
+        Beer.loadBeerToEs(modalInstance);
+        break;
+      case 1:
+      case 3:
+      case 5:
+        // Delete beer from ElasticSearch
+        Beer.deleteBeerEs(modalInstance.id);
+        break;
+    }
+
+    if (modalInstance.statusId !== 5) {
+      // Update activity
+      const activity = await Beer.app.models.Activity.findOne({where: {'beerId': modalInstance.id}});
+      activity.updateAttribute('statusId', modalInstance.statusId, next());
+    }
+
+    next();
   });
 
   /**
@@ -275,6 +268,13 @@ module.exports = function(Beer) {
     returns: {type: 'array', root: true},
   });
 
+  /**
+   * Get all beers from a specified brewery.
+   *
+   * @param beer
+   * @param brewery
+   * @returns {Promise<*[]>}
+   */
   Beer.getBeerFromBrewery = async function(beer, brewery) {
     const result = JSON.parse(JSON.stringify(await Beer.find({
       where: {name: beer},
@@ -383,7 +383,6 @@ module.exports = function(Beer) {
   });
 
   /**
-   *
    * Load all beers to ElasticSearch.
    *
    * @returns {Promise<boolean>}
@@ -423,14 +422,14 @@ module.exports = function(Beer) {
   Beer.loadBeerToEs = async function(beer) {
     if (!beer) return false;
 
-    beer['name_suggest'] = beer['name'];
+    beer.name_suggest = beer.name;
 
     await es.create({
       index: 'beers',
       body: beer,
-      id: beer['id'],
+      id: beer.id,
     }, function(err, resp) {
-      if (err) return false;
+      if (err) console.log(err);
       if (resp) return true;
     });
   };
@@ -475,7 +474,6 @@ module.exports = function(Beer) {
    * @returns {Promise<void>}
    */
   Beer.createIndexES = async function() {
-    console.log('ok index');
     // delete previous index
     await es.indices.exists({index: 'beers'}, async function(err, resp) {
       if (resp.statusCode === 200) {

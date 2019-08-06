@@ -16,15 +16,10 @@
     }
   },
   "properties": {
-    "originalId": {
-      "type": "number",
-      "required": false,
-      "default": 0
-    },
-    "isApproved": {
+    "statusId": {
       "type": "number",
       "required": true,
-      "default": 0
+      "default": 1
     }
   },
   "validations": [],
@@ -57,14 +52,6 @@
       "type": "belongsTo",
       "model": "Brewery",
       "foreignKey": "breweryId",
-      "options": {
-        "nestRemoting": true
-      }
-    },
-    "userFull": {
-      "type": "belongsTo",
-      "model": "UserFull",
-      "foreignKey": "userId",
       "options": {
         "nestRemoting": true
       }

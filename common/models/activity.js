@@ -6,5 +6,5 @@ module.exports = function(Activity) {
    */
   // required check for FK's
   Activity.validatesPresenceOf('activityTypeId', 'userId');
-  Activity.validatesNumericalityOf('activityTypeId', 'userId', 'articleId', 'beerId', 'breweryId', 'originalId', 'isApproved');
+  Activity.validatesNumericalityOf('activityTypeId', 'userId', 'articleId', 'beerId', 'breweryId', 'statusId');
 };

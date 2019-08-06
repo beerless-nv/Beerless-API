@@ -49,9 +49,14 @@
       "type": "string",
       "default": "beer-no-logo.svg"
     },
-    "isApproved": {
+    "statusId": {
       "type": "number",
       "required": true,
+      "default": 1
+    },
+    "originalId": {
+      "type": "number",
+      "required": false,
       "default": 0
     }
   },
