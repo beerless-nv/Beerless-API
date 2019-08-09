@@ -9,7 +9,7 @@ module.exports = function(Brewery) {
    */
   Brewery.validatesPresenceOf('contactId');
   Brewery.validatesUniquenessOf('name');
-  Brewery.validatesNumericalityOf('contactId', 'isApproved');
+  Brewery.validatesNumericalityOf('contactId');
 
   /**
    * User entries for breweries

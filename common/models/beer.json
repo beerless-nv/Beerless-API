@@ -71,16 +71,6 @@
       "type": "number",
       "required": false,
       "default": 0
-    },
-    "statusId": {
-      "type": "number",
-      "required": true,
-      "default": 1
-    },
-    "originalId": {
-      "type": "number",
-      "required": false,
-      "default": 0
     }
   },
   "validations": [],
@@ -112,7 +102,7 @@
       },
       "through": "BeerFromBrewery"
     },
-    "users": {
+    "favourites": {
       "type": "hasMany",
       "model": "UserFull",
       "foreignKey": "favouriteBeerId",
@@ -142,6 +132,14 @@
     "beerFromBreweries": {
       "type": "hasMany",
       "model": "BeerFromBrewery",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "beerstyles": {
+      "type": "hasMany",
+      "model": "Beerstyle",
       "foreignKey": "beerId",
       "options": {
         "nestRemoting": true

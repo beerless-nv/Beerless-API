@@ -1,0 +1,61 @@
+{
+  "name": "Entry",
+  "plural": "entries",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "current": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    }
+  },
+  "validations": [],
+  "relations": {
+    "status": {
+      "type": "belongsTo",
+      "model": "Status",
+      "foreignKey": "statusId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "activity": {
+      "type": "belongsTo",
+      "model": "Activity",
+      "foreignKey": "activityId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "articleEntry": {
+      "type": "hasOne",
+      "model": "ArticleEntry",
+      "foreignKey": "entryId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "beerEntry": {
+      "type": "hasOne",
+      "model": "BeerEntry",
+      "foreignKey": "entryId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "breweryEntry": {
+      "type": "hasOne",
+      "model": "BreweryEntry",
+      "foreignKey": "entryId",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

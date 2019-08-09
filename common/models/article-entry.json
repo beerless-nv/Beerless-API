@@ -1,6 +1,6 @@
 {
-  "name": "Article",
-  "plural": "articles",
+  "name": "ArticleEntry",
+  "plural": "articleEntries",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -41,37 +41,10 @@
   },
   "validations": [],
   "relations": {
-    "tags": {
-      "type": "hasMany",
-      "model": "Tag",
-      "foreignKey": "articleId",
-      "options": {
-        "nestRemoting": true
-      },
-      "through": "ArticleTag"
-    },
-    "editors": {
-      "type": "hasMany",
-      "model": "UserFull",
-      "foreignKey": "articleId",
-      "options": {
-        "nestRemoting": true
-      },
-      "through": "Activity"
-    },
-    "activityTypes": {
-      "type": "hasMany",
-      "model": "ActivityType",
-      "foreignKey": "articleId",
-      "options": {
-        "nestRemoting": true
-      },
-      "through": "Activity"
-    },
-    "author": {
+    "entry": {
       "type": "belongsTo",
-      "model": "UserFull",
-      "foreignKey": "userId",
+      "model": "Entry",
+      "foreignKey": "entryId",
       "options": {
         "nestRemoting": true
       }

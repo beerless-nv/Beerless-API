@@ -16,18 +16,13 @@
     }
   },
   "properties": {
-    "statusId": {
-      "type": "number",
-      "required": true,
-      "default": 1
-    }
   },
   "validations": [],
   "relations": {
-    "beer": {
+    "activityType": {
       "type": "belongsTo",
-      "model": "Beer",
-      "foreignKey": "beerId",
+      "model": "ActivityType",
+      "foreignKey": "activityTypeId",
       "options": {
         "nestRemoting": true
       }
@@ -48,6 +43,14 @@
         "nestRemoting": true
       }
     },
+    "beer": {
+      "type": "belongsTo",
+      "model": "Beer",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
     "brewery": {
       "type": "belongsTo",
       "model": "Brewery",
@@ -56,10 +59,10 @@
         "nestRemoting": true
       }
     },
-    "activityType": {
+    "status": {
       "type": "belongsTo",
-      "model": "ActivityType",
-      "foreignKey": "activityTypeId",
+      "model": "Status",
+      "foreignKey": "statusId",
       "options": {
         "nestRemoting": true
       }

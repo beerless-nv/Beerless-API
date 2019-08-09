@@ -1,5 +1,7 @@
 'use strict';
 
+const deleteKey = require('object-delete-key');
+
 /**
  * This mixin checks which type of user is trying to access the other user's information.
  * Only the administrator has access to the full user profile, which includes the user's private information (email).
@@ -12,7 +14,7 @@
  */
 module.exports = function(Model, properties) {
   Model.afterRemote('**', async function(ctx, data, next) {
-    // Assign default role in case no accessToken is used
+    // assign default role in case no accessToken is used
     let role = '$everyone';
 
     // return empty if there is no data
@@ -21,39 +23,27 @@ module.exports = function(Model, properties) {
     }
 
     // if accessToken is present, change role to the role of the user
-    if (!ctx.req.accessToken) return;
-
-    // get role from current user
-    const rolemappingId = (await Model.app.models.RoleMapping.find({where: {principalId: ctx.req.accessToken.userId}}))[0]['roleId'];
-    role = (await Model.app.models.Role.findById(rolemappingId))['name'];
+    if (ctx.req.accessToken) {
+      // get role from current user
+      const rolemappingId = (await Model.app.models.RoleMapping.find({where: {principalId: ctx.req.accessToken.userId}}))[0]['roleId'];
+      role = (await Model.app.models.Role.findById(rolemappingId))['name'];
+    }
 
     if (role !== 'Administrator') {
       // loop through all specified properties
       for (let property in properties) {
         if (properties[property]) {
-
           // remove specified property from object
-          if (Array.isArray(data)) {
-            data.map(item => {
-              if (ctx.req.accessToken.userId !== item['id']) {
-                try {
-                  item.unsetAttribute(property);
-                } catch (e) {
-
-                }
-              }
+          if (!ctx.req.accessToken || ctx.req.accessToken.userId !== data['id']) {
+            data = deleteKey(JSON.parse(JSON.stringify(data)), {
+              key: property,
+              cleanup: false,
             });
-          } else {
-            if (ctx.req.accessToken.userId !== data['id']) {
-              try {
-                data.unsetAttribute(property);
-              } catch (e) {
-
-              }
-            }
           }
         }
       }
+
+      ctx.result = data;
     }
 
     next();

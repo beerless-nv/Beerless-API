@@ -10,14 +10,7 @@ module.exports = function(Beer) {
    */
   Beer.validatesPresenceOf('name', 'ABV');
   Beer.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since', 'statusId');
-  function beerNameValidator(err, done) {
-    Beer.find({where: {name: this.name}})
-      .then(result => {
-        console.log(result);
-        if (result.length > 0) err();
-        done();
-      });
-  }
+  Beer.validatesUniquenessOf('name');
 
   /**
    * User entries for beers
@@ -51,7 +44,7 @@ module.exports = function(Beer) {
       articleId: 0,
       beerId: modalInstance.id,
       breweryId: 0,
-      statusId: 1
+      statusId: 1,
     };
 
     // Create pending activity
@@ -64,6 +57,10 @@ module.exports = function(Beer) {
    * previous entries are archived.
    */
   Beer.afterRemote('replaceById', async function(ctx, modalInstance, next) {
+
+    // breweries en styletags ook inladen en vernieuwen
+    // check nieuwste versies van breweries en neem die Id
+
     switch (modalInstance.statusId) {
       case 2:
         // Update previous versions of the beer
@@ -73,15 +70,17 @@ module.exports = function(Beer) {
           previousVersions.map(beer => {
             if (beer.statusId !== 2 && beer.statusId !== 5 && beer.id !== modalInstance.id) {
               beer.updateAttribute('statusId', 5, function(err, resp) {
-                if (err) {}
-                if (resp) {}
+                if (err) {
+                }
+                if (resp) {
+                }
               });
             }
-          })
+          });
         }
 
         // Upload beer to ElasticSearch
-        Beer.loadBeerToEs(modalInstance);
+        Beer.createBeerEs(modalInstance);
         break;
       case 1:
       case 3:
@@ -391,18 +390,16 @@ module.exports = function(Beer) {
     await Beer.find({include: ['breweries', 'styleTags']}, async function(err, beers) {
       if (beers) {
         beers.map(async beer => {
-          if (beer['isApproved'] === 1) {
-            beer['name_suggest'] = beer['name'];
+          beer.name_suggest = beer.name;
 
-            await es.create({
-              index: 'beers',
-              body: beer,
-              id: beer['id'],
-            }, function(err, resp) {
-              if (err) return false;
-              if (resp) return true;
-            });
-          }
+          await es.create({
+            index: 'beers',
+            body: beer,
+            id: beer.id,
+          }, function(err, resp) {
+            if (err) return false;
+            if (resp) return true;
+          });
         });
       }
     });
@@ -416,29 +413,52 @@ module.exports = function(Beer) {
   /**
    * Load single beer to ElasticSearch.
    *
-   * @param beer
+   * @param beerId
    * @returns {Promise<void>}
    */
-  Beer.loadBeerToEs = async function(beer) {
-    if (!beer) return false;
+  Beer.createBeerEs = async function(beerId) {
+    if (!beerId) return false;
 
-    beer.name_suggest = beer.name;
+    await Beer.findById(beerId, {include: ['breweries', 'styleTags']}, async function(err, beer) {
+      beer.name_suggest = beer.name;
 
-    await es.create({
-      index: 'beers',
-      body: beer,
-      id: beer.id,
-    }, function(err, resp) {
-      if (err) console.log(err);
-      if (resp) return true;
+      await es.create({
+        index: 'beers',
+        body: beer,
+        id: beer.id,
+      }, function(err, resp) {
+        if (err) return false;
+        if (resp) return true;
+      });
     });
   };
 
-  Beer.remoteMethod('loadBeerToEs', {
+  Beer.remoteMethod('createBeerEs', {
     accepts: [
-      {arg: 'beer', type: 'object', http: {source: 'body'}, required: true},
+      {arg: 'beerId', type: 'number', required: true},
     ],
-    http: {path: '/loadBeerToEs', verb: 'post'},
+    http: {path: '/createBeerEs', verb: 'get'},
+    returns: {type: 'boolean', root: true},
+  });
+
+  /**
+   * Update beer from ElasticSearch.
+   *
+   * @param beerId
+   * @returns {Promise<boolean>}
+   */
+  Beer.updateBeerES = async function(beerId) {
+    if (!beerId) return false;
+
+    await Beer.deleteBeerEs(beerId);
+    await Beer.createBeerEs(beerId);
+  };
+
+  Beer.remoteMethod('updateBeerES', {
+    accepts: [
+      {arg: 'beerId', type: 'number', required: true},
+    ],
+    http: {path: '/updateBeerES', verb: 'get'},
     returns: {type: 'boolean', root: true},
   });
 

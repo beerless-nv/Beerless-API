@@ -52,7 +52,10 @@
     "beer": {
       "type": "belongsTo",
       "model": "Beer",
-      "foreignKey": "beerId"
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
     },
     "userFull": {
       "type": "belongsTo",

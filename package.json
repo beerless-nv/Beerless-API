@@ -39,6 +39,7 @@
     "loopback-context": "^3.4.0",
     "loopback-ds-timestamp-mixin": "^3.4.1",
     "node-blob": "0.0.2",
+    "object-delete-key": "^1.8.36",
     "passport": "^0.4.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth": "^2.0.0",

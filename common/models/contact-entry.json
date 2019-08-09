@@ -1,6 +1,6 @@
 {
-  "name": "Contact",
-  "plural": "contacts",
+  "name": "ContactEntry",
+  "plural": "contactEntries",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -35,9 +35,9 @@
   },
   "validations": [],
   "relations": {
-    "brewery": {
+    "breweryEntry": {
       "type": "belongsTo",
-      "model": "Brewery",
+      "model": "BreweryEntry",
       "foreignKey": "breweryId",
       "options": {
         "nestRemoting": true

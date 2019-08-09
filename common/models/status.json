@@ -31,6 +31,22 @@
       "options": {
         "nestRemoting": true
       }
+    },
+    "activities": {
+      "type": "hasMany",
+      "model": "Activity",
+      "foreignKey": "statusId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "entries": {
+      "type": "hasMany",
+      "model": "Entry",
+      "foreignKey": "statusId",
+      "options": {
+        "nestRemoting": true
+      }
     }
   },
   "acls": [],

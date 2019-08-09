@@ -1,6 +1,6 @@
 {
-  "name": "Brewery",
-  "plural": "breweries",
+  "name": "BreweryEntry",
+  "plural": "breweryEntries",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -52,44 +52,17 @@
   },
   "validations": [],
   "relations": {
-    "beers": {
-      "type": "hasMany",
-      "model": "Beer",
-      "foreignKey": "breweryId",
-      "options": {
-        "nestRemoting": true
-      },
-      "through": "BeerFromBrewery"
-    },
-    "contact": {
-      "type": "hasOne",
-      "model": "Contact",
-      "foreignKey": "breweryId",
+    "entry": {
+      "type": "belongsTo",
+      "model": "Entry",
+      "foreignKey": "entryId",
       "options": {
         "nestRemoting": true
       }
     },
-    "editors": {
-      "type": "hasMany",
-      "model": "UserFull",
-      "foreignKey": "breweryId",
-      "options": {
-        "nestRemoting": true
-      },
-      "through": "Activity"
-    },
-    "activityTypes": {
-      "type": "hasMany",
-      "model": "ActivityType",
-      "foreignKey": "breweryId",
-      "options": {
-        "nestRemoting": true
-      },
-      "through": "Activity"
-    },
-    "beerFromBreweries": {
-      "type": "hasMany",
-      "model": "BeerFromBrewery",
+    "contactEntry": {
+      "type": "hasOne",
+      "model": "ContactEntry",
       "foreignKey": "breweryId",
       "options": {
         "nestRemoting": true

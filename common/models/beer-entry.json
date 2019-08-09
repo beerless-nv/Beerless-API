@@ -1,0 +1,89 @@
+{
+  "name": "BeerEntry",
+  "plural": "beerEntries",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "TimeStamp": {
+      "createdAt": "timestampCreated",
+      "updatedAt": "timestampUpdated"
+    },
+    "UserRestrictions": {
+      "email": true
+    }
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "ABV": {
+      "type": "number",
+      "required": false,
+      "dataType": "decimal",
+      "default": 0
+    },
+    "IBU": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
+    "EBC": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
+    "temperature": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    },
+    "fermentation": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "glass": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "logo": {
+      "type": "string",
+      "required": false,
+      "default": "beer-no-logo.svg"
+    },
+    "description": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "season": {
+      "type": "string",
+      "required": false,
+      "default": null
+    },
+    "since": {
+      "type": "number",
+      "required": false,
+      "default": 0
+    }
+  },
+  "validations": [],
+  "relations": {
+    "entry": {
+      "type": "belongsTo",
+      "model": "Entry",
+      "foreignKey": "entryId",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -13,7 +13,8 @@
       "updatedAt": "timestampUpdated"
     },
     "UserRestrictions": {
-      "email": true
+      "email": true,
+      "emailVerified": true
     }
   },
   "properties": {

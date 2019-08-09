@@ -140,5 +140,25 @@
   "mail": {
     "dataSource": null,
     "public": true
+  },
+  "Entry": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "BeerEntry": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "BreweryEntry": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "ArticleEntry": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "ContactEntry": {
+    "dataSource": "mysql-beerless",
+    "public": true
   }
 }
