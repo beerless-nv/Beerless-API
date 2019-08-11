@@ -1,0 +1,18 @@
+{
+  "mysql-beerless": {
+    "host": "localhost",
+    "port": 3306,
+    "url": "",
+    "database": "beerless",
+    "password": "mysql",
+    "name": "mysql-beerless",
+    "user": "root",
+    "connector": "mysql",
+    "connectTimeout": 1000000
+  },
+  "sendgrid": {
+    "name": "sendgrid",
+    "connector": "loopback-connector-sendgrid",
+    "api_key": "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"
+  }
+}
