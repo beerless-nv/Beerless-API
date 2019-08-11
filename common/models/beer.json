@@ -144,6 +144,14 @@
       "options": {
         "nestRemoting": true
       }
+    },
+    "activities": {
+      "type": "hasMany",
+      "model": "Activity",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
     }
   },
   "acls": [],

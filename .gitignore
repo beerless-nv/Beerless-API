@@ -20,4 +20,8 @@ npm-debug.log
 .env
 "sendgrid.env"
 ./server/config.json
-./server/config.production
+./server/config.production.json
+./server/datasources.json
+./server/datasources.production.json
+./server/providers.json
+./server/providers.production.json

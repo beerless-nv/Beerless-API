@@ -17,9 +17,8 @@ module.exports = function(Beerentry) {
   }
 
   /**
-   * {
-  "action": "create",
-  "beer": {
+   {
+    "action": "create",
     "name": "testBier4",
     "ABV": 0,
     "IBU": 0,
@@ -32,37 +31,31 @@ module.exports = function(Beerentry) {
     "season": "string",
     "since": 0,
     "entryId": 0,
-    "timestampCreated": "2019-08-09T13:37:52.653Z",
-    "timestampUpdated": "2019-08-09T13:37:52.653Z",
     "beerFromBreweries": [
       {
         "isPublisher": 1,
         "beerId": 0,
-        "timestampCreated": "2019-08-09T13:37:52.804Z",
-        "timestampUpdated": "2019-08-09T13:37:52.804Z",
         "breweryId": 222
       }
     ],
     "beerstyles": [
       {
         "styleTagId": 4,
-        "beerId": 0,
-        "timestampCreated": "2019-08-09T13:37:53.439Z",
-        "timestampUpdated": "2019-08-09T13:37:53.439Z"
+        "beerId": 0
       }
     ]
   }
-}
    */
 
   /**
    * User entries for beers
    * Remote hooks for create method which is used both for new entries
    * and update entries.
-   * The hooks set a statusId and create a new activity for the user.
+   * The hooks validate the entries and create activities, entries and related
+   * objects.
    */
   Beerentry.beforeRemote('create', async function(ctx, modelInstance, next) {
-    let activityTypeId, beerId, beer;
+    let activityTypeId, beerId;
     const statusId = 1;
     let entryObject = ctx.req.body;
 
@@ -73,13 +66,11 @@ module.exports = function(Beerentry) {
     if (entryObject.action === 'create') {
       activityTypeId = 1;
       beerId = 0;
-
       // Validate name
       Beerentry.validateAsync('name', beerNameValidator, {message: 'is not unique'});
     } else {
       // Check if entryObject contains originalId
       if (!entryObject.originalId) next();
-
       activityTypeId = 2;
       beerId = entryObject.originalId;
     }
@@ -105,14 +96,46 @@ module.exports = function(Beerentry) {
 
     // Update BeerEntry object
     ctx.req.body.entryId = entryId;
-    delete ctx.req.body.action;
 
     next();
   });
 
   Beerentry.afterRemote('create', async function(ctx, modalInstance, next) {
-    // create beerstyle and beerFromBrewery object
-    console.log(modalInstance);
+    console.log('AFTERREMOTE EXECUTED');
+
+    const beer = modalInstance;
+
+    // Create beerstyles
+    if (beer.beerstyles && beer.beerstyles.length > 0) {
+      beer.beerstyles.map(beerstyle => {
+        const beerstyleEntry = {
+          beerId: beer.id,
+          styleTagId: beerstyle.styleTagId,
+        };
+        Beerentry.app.models.BeerstyleEntry.create(beerstyleEntry).then(data => console.log(data)).catch(err => console.log(err));
+      });
+    }
+
+    // Create beerFromBrewery
+    if (beer.beerFromBreweries && beer.beerFromBreweries.length > 0) {
+      beer.beerFromBreweries.map(beerFromBrewery => {
+        const beerFromBreweryEntry = {
+          beerId: beer.id,
+          breweryId: beerFromBrewery.breweryId,
+          isPublisher: beerFromBrewery.isPublisher,
+        };
+        Beerentry.app.models.BeerFromBreweryEntry.create(beerFromBreweryEntry).then(data => console.log(data)).catch(err => console.log(err));
+      });
+    }
+
+    // // Update activity if action is create
+    // if (beer.action === 'create') {
+    //   const activityId = (await Beerentry.app.models.Entry.findById(beer.entryId)).activityId;
+    //   const activity = await Beerentry.app.models.Activity.findById(activityId);
+    //   activity.updateAttribute('beerId', beer.id, next());
+    // }
+
+    next();
   });
 
   /**

@@ -160,5 +160,13 @@
   "ContactEntry": {
     "dataSource": "mysql-beerless",
     "public": true
+  },
+  "BeerstyleEntry": {
+    "dataSource": "mysql-beerless",
+    "public": true
+  },
+  "BeerFromBreweryEntry": {
+    "dataSource": "mysql-beerless",
+    "public": true
   }
 }

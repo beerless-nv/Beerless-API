@@ -15,8 +15,7 @@
       "email": true
     }
   },
-  "properties": {
-  },
+  "properties": {},
   "validations": [],
   "relations": {
     "activityType": {

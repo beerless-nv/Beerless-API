@@ -1,0 +1,43 @@
+{
+  "name": "BeerFromBreweryEntry",
+  "plural": "beerFromBreweryEntries",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "TimeStamp": {
+      "createdAt": "timestampCreated",
+      "updatedAt": "timestampUpdated"
+    },
+    "UserRestrictions": {
+      "email": true
+    }
+  },
+  "properties": {
+    "isPublisher": {
+      "type": "number",
+      "required": true,
+      "default": 1
+    },
+    "breweryId": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    }
+  },
+  "validations": [],
+  "relations": {
+    "beerEntry": {
+      "type": "belongsTo",
+      "model": "BeerEntry",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

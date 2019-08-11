@@ -82,6 +82,22 @@
       "options": {
         "nestRemoting": true
       }
+    },
+    "beerFromBreweryEntries": {
+      "type": "hasMany",
+      "model": "BeerFromBreweryEntry",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
+    },
+    "beerstyleEntries": {
+      "type": "hasMany",
+      "model": "BeerstyleEntry",
+      "foreignKey": "beerId",
+      "options": {
+        "nestRemoting": true
+      }
     }
   },
   "acls": [],
