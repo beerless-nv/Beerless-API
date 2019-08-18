@@ -36,8 +36,8 @@ module.exports = function (Styletag) {
     let value = {};
     let synonyms = [];
     let credentials = {
-      "email": "info@beerless.be",
-      "password": "sselreeB1998"
+      'email': process.env.OSWALD_EMAIL,
+      'password': process.env.OSWALD_PASSWORD
     };
 
     //get login access token
