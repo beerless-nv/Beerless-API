@@ -6,7 +6,7 @@ module.exports = function (Chatbot) {
 
     /**
      * Cron job to retrain chatbot
-     * 
+     *
      * @param chatbotID
      */
     Chatbot.retrain = async function (req, next) {
@@ -32,7 +32,7 @@ module.exports = function (Chatbot) {
         };
 
         //get login access token
-        const login = (await axios.post(baseUri + "/users/login", credentials))['data'];
+        const login = (await axios.post(baseUri + "/users/login", credentials).catch(err => console.log(err)))['data'];
 
         const params = {
             'access_token': login['id']

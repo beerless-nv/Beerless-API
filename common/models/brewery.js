@@ -35,7 +35,7 @@ module.exports = function(Brewery) {
       }
 
       // insert brewery object in db
-      const brewery = await Brewery.create(data);
+      const brewery = await Brewery.create(data).catch(err => console.log(err));
 
       // add activity for the insert
       const activity = {
@@ -85,7 +85,7 @@ module.exports = function(Brewery) {
     }
 
     // variables
-    const breweries = await Brewery.find({where: {isApproved: 1}});
+    const breweries = await Brewery.find({where: {isApproved: 1}}).catch(err => console.log(err));
     const chatbotId = '5c909b61ccc52e00050a6e76';
     const baseUri = 'https://admin-api.oswald.ai/api/v1';
     const entityLabelId = '5cda657629ba2e00052af1a0';
@@ -98,7 +98,7 @@ module.exports = function(Brewery) {
     };
 
     //get login access token
-    const login = (await axios.post(baseUri + '/users/login', credentials))['data'];
+    const login = (await axios.post(baseUri + '/users/login', credentials).catch(err => console.log(err)))['data'];
 
     //add acces token to options
     const options = {
@@ -182,7 +182,7 @@ module.exports = function(Brewery) {
       },
       from: from,
       size: size,
-    });
+    }).catch(err => console.log(err));
 
     return result.body.hits;
   };
@@ -222,7 +222,7 @@ module.exports = function(Brewery) {
           },
         },
       },
-    });
+    }).catch(err => console.log(err));
 
     return result.body.suggest['suggest-brewery'][0]['options'];
   };
@@ -258,11 +258,11 @@ module.exports = function(Brewery) {
             }, function(err, resp) {
               if (err) return false;
               if (resp) return true;
-            });
+            }).catch(err => console.log(err));
           }
         });
       }
-    });
+    }).catch(err => console.log(err));
   };
 
   Brewery.remoteMethod('loadAllBreweriesToES', {
@@ -288,7 +288,7 @@ module.exports = function(Brewery) {
     }, function(err, resp) {
       if (err) return false;
       if (resp) return true;
-    });
+    }).catch(err => console.log(err));
   };
 
   Brewery.remoteMethod('loadBreweryToEs', {
@@ -314,7 +314,7 @@ module.exports = function(Brewery) {
     }, function(err, resp) {
       if (err) return false;
       if (resp) return true;
-    });
+    }).catch(err => console.log(err));
   };
 
   Brewery.remoteMethod('deleteBreweryEs', {
@@ -335,7 +335,7 @@ module.exports = function(Brewery) {
     await es.indices.exists({index: 'breweries'}, async function(err, resp) {
       if (resp.statusCode === 200) {
         await es.indices.delete({index: 'breweries'}, function(err, resp) {
-        });
+        }).catch(err => console.log(err));
       }
 
       // create new index
@@ -364,8 +364,8 @@ module.exports = function(Brewery) {
       }, async function(err, resp) {
         if (err) return false;
         if (resp) return true;
-      });
-    });
+      }).catch(err => console.log(err));
+    }).catch(err => console.log(err));
   };
 
   Brewery.remoteMethod('createIndexES', {

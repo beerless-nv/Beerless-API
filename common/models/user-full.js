@@ -42,7 +42,7 @@ module.exports = function(Userfull) {
   Userfull.checkToken = async function(token) {
     if (!token) return false;
 
-    const accessToken = await Userfull.app.models.AccessToken.findById(token);
+    const accessToken = await Userfull.app.models.AccessToken.findById(token).catch(err => console.log(err));
     if (!accessToken) return false;
 
     const expireDate = Date.parse(accessToken.created) + (accessToken.ttl * 1000);
@@ -72,14 +72,14 @@ module.exports = function(Userfull) {
       return '$everyone';
     }
 
-    const roleId = (await Userfull.app.models.RoleMapping.find({where: {principalId: req.accessToken.userId}}))[0]['roleId'];
+    const roleId = (await Userfull.app.models.RoleMapping.find({where: {principalId: req.accessToken.userId}}).catch(err => console.log(err)))[0]['roleId'];
 
     return await Userfull.app.models.Role.findById(roleId, {
       fields: {
         id: true,
         name: true,
       },
-    });
+    }).catch(err => console.log(err));
   };
 
   Userfull.remoteMethod('getRole', {
@@ -102,8 +102,8 @@ module.exports = function(Userfull) {
       if (err) {
         return err;
       }
-      Userfull.sendVerificationEmail(user.id);
-    });
+      Userfull.sendVerificationEmail(user.id).catch(err => console.log(err));
+    }).catch(err => console.log(err));
 
     return ctx.result.id;
   });
@@ -140,7 +140,7 @@ module.exports = function(Userfull) {
    */
   Userfull.sendVerificationEmail = async function(userId) {
     // get user
-    const user = await Userfull.findById(userId);
+    const user = await Userfull.findById(userId).catch(err => console.log(err));
 
     sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -244,7 +244,7 @@ module.exports = function(Userfull) {
   // delete expired accessTokens
   Userfull.afterRemote('login', async function(info) {
     // get all accessTokens from current user
-    const accessTokens = await Userfull.app.models.AccessToken.find({where: {userId: info.userId}});
+    const accessTokens = await Userfull.app.models.AccessToken.find({where: {userId: info.userId}}).catch(err => console.log(err));
 
     // delete accessTokens which are expired
     accessTokens.map(accessToken => {
@@ -257,8 +257,6 @@ module.exports = function(Userfull) {
 
   //
   Userfull.beforeRemote('setPassword', function(ctx, user, next) {
-    // console.log(ctx.req.body);
-    console.log(user);
     if (!ctx.req.body) next();
 
     Base.hasPassword(ctx.req.body.currentPassword, (err, isMatch) => {

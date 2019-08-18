@@ -8,8 +8,6 @@ module.exports = function(Mail) {
    * @returns {Promise<string>}
    */
   Mail.sendMail = async function(data, next) {
-    console.log(data);
-
     //TODO: methode beveiligen
     if (!data || (!data.firstName || !data.lastName || !data.email || !data.message)) {
       const err = new Error();

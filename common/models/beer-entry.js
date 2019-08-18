@@ -7,10 +7,8 @@ module.exports = function(Beerentry) {
   // Beerentry.validatesPresenceOf('beer.name', 'beer.ABV');
   // Beerentry.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since');
   function beerNameValidator(err, done) {
-    console.log(this.name);
     Beerentry.find({where: {name: this.name}})
       .then(result => {
-        console.log(result);
         if (result.length > 0) err();
         done();
       });
@@ -84,7 +82,7 @@ module.exports = function(Beerentry) {
       breweryId: 0,
       statusId: statusId,
     };
-    const activityId = (await Beerentry.app.models.Activity.create(activity)).id;
+    const activityId = (await Beerentry.app.models.Activity.create(activity).catch(err => console.log(err))).id;
 
     // Create entry
     const entry = {
@@ -92,7 +90,7 @@ module.exports = function(Beerentry) {
       statusId: statusId,
       activityId: activityId,
     };
-    const entryId = (await Beerentry.app.models.Entry.create(entry)).id;
+    const entryId = (await Beerentry.app.models.Entry.create(entry).catch(err => console.log(err))).id;
 
     // Update BeerEntry object
     ctx.req.body.entryId = entryId;
@@ -101,8 +99,6 @@ module.exports = function(Beerentry) {
   });
 
   Beerentry.afterRemote('create', async function(ctx, modalInstance, next) {
-    console.log('AFTERREMOTE EXECUTED');
-
     const beer = modalInstance;
 
     // Create beerstyles
@@ -128,61 +124,97 @@ module.exports = function(Beerentry) {
       });
     }
 
-    // // Update activity if action is create
-    // if (beer.action === 'create') {
-    //   const activityId = (await Beerentry.app.models.Entry.findById(beer.entryId)).activityId;
-    //   const activity = await Beerentry.app.models.Activity.findById(activityId);
-    //   activity.updateAttribute('beerId', beer.id, next());
-    // }
-
     next();
   });
 
   /**
-   * Remote hook for the approval system.
-   * The hook makes sure the entries from users are updated correctly and
-   * previous entries are archived.
+   * The beer entry is accepted and is being created.
+   *
+   * @param id
+   * @returns {Promise<T | void>}
    */
-  Beerentry.afterRemote('replaceById', async function(ctx, modalInstance, next) {
+  Beerentry.createBeer = async function(id) {
+    let beer;
+    const beerEntry = await Beerentry.findById(id).catch(err => console.log(err));
+    const beerstyleEntries = await Beerentry.app.models.BeerstyleEntry.find({where: {beerId: id}}).catch(err => console.log(err));
+    const beerFromBreweryEntries = await Beerentry.app.models.BeerFromBreweryEntry.find({where: {beerId: id}}).catch(err => console.log(err));
 
-    // breweries en styletags ook inladen en vernieuwen
-    // check nieuwste versies van breweries en neem die Id
+    // create beer
+    beerEntry.id = null;
+    beer = await Beerentry.app.models.Beer.create(beerEntry).catch(err => console.log(err));
 
-    switch (modalInstance.statusId) {
-      case 2:
-        // Update previous versions of the beer
-        if (modalInstance.originalId !== 0) {
-          const previousVersions = await Beer.find({where: {or: [{id: modalInstance.originalId}, {originalId: modalInstance.originalId}]}});
+    // create new related objects
+    if (beerstyleEntries.length > 0) {
+      beerstyleEntries.map(async beerstyleEntry => {
+        beerstyleEntry.id = null;
+        beerstyleEntry.beerId = beer.id;
+        Beerentry.app.models.Beerstyle.create(beerstyleEntry).catch(err => console.log(err));
+      });
+    }
+    if (beerFromBreweryEntries.length > 0) {
+      beerFromBreweryEntries.map(async beerFromBreweryEntry => {
+        beerFromBreweryEntry.id = null;
+        beerFromBreweryEntry.beerId = beer.id;
+        Beerentry.app.models.BeerFromBrewery.create(beerFromBreweryEntry).catch(err => console.log(err));
+      });
+    }
 
-          previousVersions.map(beer => {
-            if (beer.statusId !== 2 && beer.statusId !== 5 && beer.id !== modalInstance.id) {
-              beer.updateAttribute('statusId', 5, function(err, resp) {
-                if (err) {
-                }
-                if (resp) {
-                }
-              });
-            }
-          });
+    return beer;
+  };
+
+  Beerentry.remoteMethod('createBeer', {
+    accepts: [
+      {arg: 'id', type: 'number', required: true},
+    ],
+    http: {path: '/:id/createBeer', verb: 'get'},
+    returns: {type: 'object', root: true},
+  });
+
+  /**
+   * The beer entry is accepted and is being updated.
+   *
+   * @param id
+   * @returns {Promise<T | void>}
+   */
+  Beerentry.updateBeer = async function(id) {
+    let beer;
+    const beerstyleEntries = await Beerentry.app.models.BeerstyleEntry.find({where: {beerId: id}}).catch(err => console.log(err));
+    const beerFromBreweryEntries = await Beerentry.app.models.BeerFromBreweryEntry.find({where: {beerId: id}}).catch(err => console.log(err));
+
+    // update beer
+    const existingBeer = await Beerentry.app.models.Beer.findById(activity.beerId).catch(err => console.log(err));
+    beer = await existingBeer.updateAttributes(beerEntry).catch(err => console.log(err));
+
+    // update related objects
+    if (beerstyleEntries.length > 0) {
+      // get original beerstyles
+      const beerstyles = Beerentry.app.models.Beerstyle.find({where: {beerId: beer.id}}).catch(err => console.log(err));
+
+      const lengthDiff = beerstyles.length - beerstyleEntries.length;
+      if (lengthDiff > 0) {
+        for (let i = beerstyles.length; i > beerstyleEntries.length; i--) {
+          await Beerentry.app.models.Beerstyle.delete(beerstyles[i - 1].id).catch(err => console.log(err));
         }
+      }
 
-        // Upload beer to ElasticSearch
-        Beer.loadBeerToEs(modalInstance);
-        break;
-      case 1:
-      case 3:
-      case 5:
-        // Delete beer from ElasticSearch
-        Beer.deleteBeerEs(modalInstance.id);
-        break;
+      for (let i = 0; i < beerstyleEntries.length; i++) {
+        if (i <= (beerstyles.length - 1)) {
+          beerstyles[i].updateAttributes(beerstyleEntries[i]).catch(err => console.log(err));
+        } else {
+          await Beerentry.app.models.Beerstyle.create(beerstyleEntries[i]).catch(err => console.log(err));
+        }
+      }
     }
+    if (beerFromBreweryEntries.length > 0) {
 
-    if (modalInstance.statusId !== 5) {
-      // Update activity
-      const activity = await Beer.app.models.Activity.findOne({where: {'beerId': modalInstance.id}});
-      activity.updateAttribute('statusId', modalInstance.statusId, next());
     }
+  };
 
-    next();
+  Beerentry.remoteMethod('updateBeer', {
+    accepts: [
+      {arg: 'id', type: 'number', required: true},
+    ],
+    http: {path: '/:id/updateBeer', verb: 'get'},
+    returns: {type: 'object', root: true},
   });
 };

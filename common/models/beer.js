@@ -9,94 +9,22 @@ module.exports = function(Beer) {
    * Validation
    */
   Beer.validatesPresenceOf('name', 'ABV');
-  Beer.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since', 'statusId');
+  Beer.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since');
   Beer.validatesUniquenessOf('name');
 
-  /**
-   * User entries for beers
-   * Remote hooks for create method which is used both for new entries
-   * and update entries.
-   * The hooks set a statusId and create a new activity for the user.
-   */
-  Beer.beforeRemote('create', async function(ctx, modelInstance, next) {
-    const beer = ctx.req.body;
-
-    // set statusId = 1 (pending) if entry from user
-    beer.statusId = 1;
-
-    next();
-  });
-
-  Beer.afterRemote('create', async function(ctx, modalInstance, next) {
-    let activityTypeId;
-
-    // Chose activityType based on whether or not the originalId is entered
-    if (modalInstance.originalId === 0) {
-      activityTypeId = 1;
-      Beer.validateAsync('name', beerNameValidator, {message: 'is not unique'});
+  Beer.observe('after save', async function(ctx, next) {
+    if (ctx.instance) {
+      // load new beer to ElasticSearch
+      Beer.createBeerEs(ctx.instance.id).catch(err => console.log(err));
     } else {
-      activityTypeId = 2;
+      // update beer in ElasticSearch
+      console.log('updated', ctx.where);
     }
-
-    const activity = {
-      activityTypeId: activityTypeId,
-      userId: ctx.req.accessToken.userId,
-      articleId: 0,
-      beerId: modalInstance.id,
-      breweryId: 0,
-      statusId: 1,
-    };
-
-    // Create pending activity
-    Beer.app.models.Activity.create(activity, next());
   });
 
-  /**
-   * Remote hook for the approval system.
-   * The hook makes sure the entries from users are updated correctly and
-   * previous entries are archived.
-   */
-  Beer.afterRemote('replaceById', async function(ctx, modalInstance, next) {
-
-    // breweries en styletags ook inladen en vernieuwen
-    // check nieuwste versies van breweries en neem die Id
-
-    switch (modalInstance.statusId) {
-      case 2:
-        // Update previous versions of the beer
-        if (modalInstance.originalId !== 0) {
-          const previousVersions = await Beer.find({where: {or: [{id: modalInstance.originalId}, {originalId: modalInstance.originalId}]}});
-
-          previousVersions.map(beer => {
-            if (beer.statusId !== 2 && beer.statusId !== 5 && beer.id !== modalInstance.id) {
-              beer.updateAttribute('statusId', 5, function(err, resp) {
-                if (err) {
-                }
-                if (resp) {
-                }
-              });
-            }
-          });
-        }
-
-        // Upload beer to ElasticSearch
-        Beer.createBeerEs(modalInstance);
-        break;
-      case 1:
-      case 3:
-      case 5:
-        // Delete beer from ElasticSearch
-        Beer.deleteBeerEs(modalInstance.id);
-        break;
-    }
-
-    if (modalInstance.statusId !== 5) {
-      // Update activity
-      const activity = await Beer.app.models.Activity.findOne({where: {'beerId': modalInstance.id}});
-      activity.updateAttribute('statusId', modalInstance.statusId, next());
-    }
-
-    next();
+  Beer.observe('after delete', async function(ctx, next) {
+    // delete beer from ElasticSearch
+    console.log('deleted', ctx.where);
   });
 
   /**
@@ -112,7 +40,7 @@ module.exports = function(Beer) {
       let recommendations = [];
 
       // check if beer exists
-      const beer = await Beer.findById(beerId);
+      const beer = await Beer.findById(beerId).catch(err => console.log(err));
       if (!beer) {
         const err = new Error();
         err.statusCode = 404;
@@ -125,7 +53,6 @@ module.exports = function(Beer) {
       // http request to recommendation script
       axios.get(app.get('recommendations_url') + '?beerId=' + beerId + '&amount=' + amount)
         .then(async(response) => {
-          console.log(beerId, amount);
           if (response.data.length > 0) {
             for (const recommendation of response.data) {
 
@@ -137,9 +64,8 @@ module.exports = function(Beer) {
                   logo: true,
                   description: true,
                 },
-              });
+              }).catch(err => console.log(err));
               if (beer) {
-                console.log('ok');
                 // make recommendation objects and add it to the array
                 recommendations.push({
                   beer: beer, distance: recommendation.distance,
@@ -147,7 +73,6 @@ module.exports = function(Beer) {
               }
 
               if (recommendations.length === amount) {
-                console.log(recommendations.length, amount);
                 resolve(recommendations);
                 return;
               }
@@ -196,7 +121,7 @@ module.exports = function(Beer) {
     }
 
     //variables
-    const beers = await Beer.find({where: {isApproved: 1}});
+    const beers = await Beer.find({where: {isApproved: 1}}).catch(err => console.log(err));
     const chatbotId = '5c909b61ccc52e00050a6e76';
     const baseUri = 'https://admin-api.oswald.ai/api/v1';
     const entityLabelId = '5cda657629ba2e00052af19e';
@@ -209,7 +134,7 @@ module.exports = function(Beer) {
     };
 
     //get login access token
-    const login = (await axios.post(baseUri + '/users/login', credentials))['data'];
+    const login = (await axios.post(baseUri + '/users/login', credentials).catch(err => console.log(err)))['data'];
 
     //add acces token to options
     const options = {
@@ -281,7 +206,7 @@ module.exports = function(Beer) {
         relation: 'breweries',
         scope: {where: {name: brewery}},
       }, 'styleTags'],
-    })));
+    }).catch(err => console.log(err))));
 
     for (let resultKey in result) {
       if ((result[resultKey]['breweries']).length > 0) {
@@ -327,7 +252,7 @@ module.exports = function(Beer) {
       },
       from: from,
       size: size,
-    });
+    }).catch(err => console.log(err));
 
     return result.body.hits;
   };
@@ -367,7 +292,7 @@ module.exports = function(Beer) {
           },
         },
       },
-    });
+    }).catch(err => console.log(err));
 
     return result.body.suggest['suggest-beer'][0]['options'];
   };
@@ -399,10 +324,10 @@ module.exports = function(Beer) {
           }, function(err, resp) {
             if (err) return false;
             if (resp) return true;
-          });
+          }).catch(err => console.log(err));
         });
       }
-    });
+    }).catch(err => console.log(err));
   };
 
   Beer.remoteMethod('loadAllBeersToES', {
@@ -414,7 +339,7 @@ module.exports = function(Beer) {
    * Load single beer to ElasticSearch.
    *
    * @param beerId
-   * @returns {Promise<void>}
+   * @returns {Promise<boolean>}
    */
   Beer.createBeerEs = async function(beerId) {
     if (!beerId) return false;
@@ -426,10 +351,7 @@ module.exports = function(Beer) {
         index: 'beers',
         body: beer,
         id: beer.id,
-      }, function(err, resp) {
-        if (err) return false;
-        if (resp) return true;
-      });
+      }).catch(err => console.log(err));
     });
   };
 
@@ -450,8 +372,8 @@ module.exports = function(Beer) {
   Beer.updateBeerES = async function(beerId) {
     if (!beerId) return false;
 
-    await Beer.deleteBeerEs(beerId);
-    await Beer.createBeerEs(beerId);
+    await Beer.deleteBeerEs(beerId).catch(err => console.log(err));
+    await Beer.createBeerEs(beerId).catch(err => console.log(err));
   };
 
   Beer.remoteMethod('updateBeerES', {
@@ -477,7 +399,7 @@ module.exports = function(Beer) {
     }, function(err, resp) {
       if (err) return false;
       if (resp) return true;
-    });
+    }).catch(err => console.log(err));
   };
 
   Beer.remoteMethod('deleteBeerEs', {
@@ -498,7 +420,7 @@ module.exports = function(Beer) {
     await es.indices.exists({index: 'beers'}, async function(err, resp) {
       if (resp.statusCode === 200) {
         await es.indices.delete({index: 'beers'}, function(err, resp) {
-        });
+        }).catch(err => console.log(err));
       }
 
       // create new index
@@ -519,8 +441,8 @@ module.exports = function(Beer) {
       }, async function(err, resp) {
         if (err) return false;
         if (resp) return true;
-      });
-    });
+      }).catch(err => console.log(err));
+    }).catch(err => console.log(err));
   };
 
   Beer.remoteMethod('createIndexES', {

@@ -10,12 +10,11 @@ module.exports = function(Useridentity) {
     const res = (currentCtx && currentCtx.get('http'))['res'];
 
     // check if a user with this email already exists
-    const user = await Useridentity.app.models.UserFull.find({where: {email: ctx['instance']['profile']['emails'][0]['value']}});
+    const user = await Useridentity.app.models.UserFull.find({where: {email: ctx['instance']['profile']['emails'][0]['value']}}).catch(err => console.log(err));
 
     // stop if email already exists
     if (user.length > 0) {
       // delete passports created user
-      console.log(user);
       await Useridentity.app.models.UserFull.deleteById(ctx['instance']['userId'])
         .then(data => console.log('data', data))
         .catch(err => console.error('err', err));
