@@ -7,9 +7,26 @@ module.exports = function(Brewery) {
   /**
    * Validation
    */
-  Brewery.validatesPresenceOf('contactId');
-  Brewery.validatesUniquenessOf('name');
-  Brewery.validatesNumericalityOf('contactId');
+  // Brewery.validatesUniquenessOf('name');
+
+
+  Brewery.observe('after save', async function(ctx, next){
+    if(ctx.isNewInstance){
+      // Load new Brewery to ElasticSearch
+      Brewery.createBreweryEs(ctx.instance.id).catch(err => console.error(err));
+    }
+    else{
+      // Update brewery in ElasticSearch
+      Brewery.updateBreweryES(ctx.instance.id).catch(err => console.error(err));
+    }
+    next();
+  });
+
+  Brewery.observe('after delete', async function(ctx, next) {
+    // Delete Brewery from ElasticSearch
+    Brewery.deleteBreweryES(ctx.where.id).catch(err => console.error(err));
+    next();
+  });
 
   /**
    * User entries for breweries
@@ -262,7 +279,7 @@ module.exports = function(Brewery) {
           }
         });
       }
-    }).catch(err => console.error(err));
+    });
   };
 
   Brewery.remoteMethod('loadAllBreweriesToES', {
@@ -276,7 +293,7 @@ module.exports = function(Brewery) {
    * @param brewery
    * @returns {Promise<void>}
    */
-  Brewery.loadBreweryToEs = async function(brewery) {
+  Brewery.createBreweryEs = async function(brewery) {
     if (!brewery) return false;
 
     brewery['name_suggest'] = brewery['name'];
@@ -291,11 +308,11 @@ module.exports = function(Brewery) {
     }).catch(err => console.error(err));
   };
 
-  Brewery.remoteMethod('loadBreweryToEs', {
+  Brewery.remoteMethod('createBreweryEs', {
     accepts: [
       {arg: 'brewery', type: 'object', http: {source: 'body'}, required: true},
     ],
-    http: {path: '/loadBreweryToEs', verb: 'post'},
+    http: {path: '/createBreweryEs', verb: 'post'},
     returns: {type: 'boolean', root: true},
   });
 

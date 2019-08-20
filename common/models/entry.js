@@ -4,6 +4,7 @@ module.exports = function(Entry) {
   Entry.acceptEntry = async function(id, next) {
     const statusId = 2, current = 1;
     const entry = await Entry.findById(id, {include: ['beerEntry', 'breweryEntry', 'articleEntry']}).catch(err => console.error(err));
+    console.log(entry);
     const activity = await Entry.app.models.Activity.findById(entry.activityId).catch(err => console.error(err));
 
     // check if entry exists
@@ -28,7 +29,13 @@ module.exports = function(Entry) {
     }
 
     if (jsonEntry.hasOwnProperty('breweryEntry')) {
-      console.log('breweryEntry');
+      let brewery;
+      if (activity.breweryId === 0){
+        brewery = await Entry.app.models.BreweryEntry.createBrewery(jsonEntry.breweryEntry.id).catch(err => console.error(err));
+        activity.breweryId = brewery.id;
+      } else {
+        brewery = await Entry.app.models.BreweryEntry.updateBrewery(jsonEntry.breweryEntry.id, activity.breweryId).catch(err => console.error(err));
+      }
     }
 
     if (jsonEntry.hasOwnProperty('articleEntry')) {

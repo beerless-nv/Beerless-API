@@ -326,7 +326,7 @@ module.exports = function(Beer) {
           }).catch(err => console.error(err));
         });
       }
-    }).catch(err => console.error(err));
+    });
   };
 
   Beer.remoteMethod('loadAllBeersToES', {
