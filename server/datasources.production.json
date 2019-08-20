@@ -3,16 +3,16 @@
     "host": "beerless.be",
     "port": 3306,
     "url": "",
-    "database": "beerle1q_beerless_platform",
-    "password": "sselreeB1998",
+    "database": "${PROD_DATABASE}",
+    "password": "${PROD_PASSWORD}",
     "name": "mysql-beerless",
-    "user": "beerle1q",
+    "user": "${PROD_USER}",
     "connector": "mysql",
     "connectTimeout": 1000000
   },
   "sendgrid": {
     "name": "sendgrid",
     "connector": "loopback-connector-sendgrid",
-    "api_key": "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"
+    "api_key": "${SENDGRID_API_KEY}"
   }
 }
