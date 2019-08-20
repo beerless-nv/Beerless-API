@@ -32,14 +32,14 @@ module.exports = function (Chatbot) {
         };
 
         //get login access token
-        const login = (await axios.post(baseUri + "/users/login", credentials).catch(err => console.log(err)))['data'];
+        const login = (await axios.post(baseUri + "/users/login", credentials).catch(err => console.error(err)))['data'];
 
         const params = {
             'access_token': login['id']
         }
 
         //POST request to retrain chatbot
-        axios.post(baseUri + '/chatbots/' + chatbotId + '/move-to-production', {}, { params: params }).catch(err => console.log(err));
+        axios.post(baseUri + '/chatbots/' + chatbotId + '/move-to-production', {}, { params: params }).catch(err => console.error(err));
 
         //Return
         return true;

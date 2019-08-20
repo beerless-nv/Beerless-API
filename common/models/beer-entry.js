@@ -58,7 +58,12 @@ module.exports = function(Beerentry) {
     let entryObject = ctx.req.body;
 
     // Check if entryObject is correct
-    if (!entryObject.action) next();
+    if (!entryObject.action) {
+      const err = new Error('Action is missing');
+      err.statusCode = 404;
+      err.code = 'PROPERTY_MISSING';
+      return next(err);
+    }
 
     // Create variables based on action
     if (entryObject.action === 'create') {
@@ -66,11 +71,21 @@ module.exports = function(Beerentry) {
       beerId = 0;
       // Validate name
       Beerentry.validateAsync('name', beerNameValidator, {message: 'is not unique'});
-    } else {
+    } else if (entryObject.action === 'update') {
       // Check if entryObject contains originalId
-      if (!entryObject.originalId) next();
+      if (!entryObject.originalId) {
+        const err = new Error('OriginalId is missing');
+        err.statusCode = 404;
+        err.code = 'PROPERTY_MISSING';
+        return next(err);
+      }
       activityTypeId = 2;
       beerId = entryObject.originalId;
+    } else {
+      const err = new Error('Action has an invalid value');
+      err.statusCode = 404;
+      err.code = 'INVALID_VALUE';
+      return next(err);
     }
 
     // Create activity
@@ -82,7 +97,7 @@ module.exports = function(Beerentry) {
       breweryId: 0,
       statusId: statusId,
     };
-    const activityId = (await Beerentry.app.models.Activity.create(activity).catch(err => console.log(err))).id;
+    const activityId = (await Beerentry.app.models.Activity.create(activity).catch(err => console.error(err))).id;
 
     // Create entry
     const entry = {
@@ -90,7 +105,7 @@ module.exports = function(Beerentry) {
       statusId: statusId,
       activityId: activityId,
     };
-    const entryId = (await Beerentry.app.models.Entry.create(entry).catch(err => console.log(err))).id;
+    const entryId = (await Beerentry.app.models.Entry.create(entry).catch(err => console.error(err))).id;
 
     // Update BeerEntry object
     ctx.req.body.entryId = entryId;
@@ -108,7 +123,7 @@ module.exports = function(Beerentry) {
           beerId: beer.id,
           styleTagId: beerstyle.styleTagId,
         };
-        Beerentry.app.models.BeerstyleEntry.create(beerstyleEntry).then(data => console.log(data)).catch(err => console.log(err));
+        Beerentry.app.models.BeerstyleEntry.create(beerstyleEntry).then(data => console.log(data)).catch(err => console.error(err));
       });
     }
 
@@ -120,7 +135,7 @@ module.exports = function(Beerentry) {
           breweryId: beerFromBrewery.breweryId,
           isPublisher: beerFromBrewery.isPublisher,
         };
-        Beerentry.app.models.BeerFromBreweryEntry.create(beerFromBreweryEntry).then(data => console.log(data)).catch(err => console.log(err));
+        Beerentry.app.models.BeerFromBreweryEntry.create(beerFromBreweryEntry).then(data => console.log(data)).catch(err => console.error(err));
       });
     }
 
@@ -135,27 +150,24 @@ module.exports = function(Beerentry) {
    */
   Beerentry.createBeer = async function(id) {
     let beer;
-    const beerEntry = await Beerentry.findById(id).catch(err => console.log(err));
-    const beerstyleEntries = await Beerentry.app.models.BeerstyleEntry.find({where: {beerId: id}}).catch(err => console.log(err));
-    const beerFromBreweryEntries = await Beerentry.app.models.BeerFromBreweryEntry.find({where: {beerId: id}}).catch(err => console.log(err));
+    const beerEntry = await Beerentry.findById(id, {fields: {id: false}}).catch(err => console.error(err));
+    const beerstyleEntries = await Beerentry.app.models.BeerstyleEntry.find({where: {beerId: id}, fields: {id: false}}).catch(err => console.error(err));
+    const beerFromBreweryEntries = await Beerentry.app.models.BeerFromBreweryEntry.find({where: {beerId: id}, fields: {id: false}}).catch(err => console.error(err));
 
     // create beer
-    beerEntry.id = null;
-    beer = await Beerentry.app.models.Beer.create(beerEntry).catch(err => console.log(err));
+    beer = await Beerentry.app.models.Beer.create(beerEntry).catch(err => console.error(err));
 
     // create new related objects
     if (beerstyleEntries.length > 0) {
       beerstyleEntries.map(async beerstyleEntry => {
-        beerstyleEntry.id = null;
         beerstyleEntry.beerId = beer.id;
-        Beerentry.app.models.Beerstyle.create(beerstyleEntry).catch(err => console.log(err));
+        Beerentry.app.models.Beerstyle.create(beerstyleEntry).catch(err => console.error(err));
       });
     }
     if (beerFromBreweryEntries.length > 0) {
       beerFromBreweryEntries.map(async beerFromBreweryEntry => {
-        beerFromBreweryEntry.id = null;
         beerFromBreweryEntry.beerId = beer.id;
-        Beerentry.app.models.BeerFromBrewery.create(beerFromBreweryEntry).catch(err => console.log(err));
+        Beerentry.app.models.BeerFromBrewery.create(beerFromBreweryEntry).catch(err => console.error(err));
       });
     }
 
@@ -174,45 +186,56 @@ module.exports = function(Beerentry) {
    * The beer entry is accepted and is being updated.
    *
    * @param id
+   * @param originalId
    * @returns {Promise<T | void>}
    */
-  Beerentry.updateBeer = async function(id) {
+  Beerentry.updateBeer = async function(id, originalId) {
     let beer;
-    const beerstyleEntries = await Beerentry.app.models.BeerstyleEntry.find({where: {beerId: id}}).catch(err => console.log(err));
-    const beerFromBreweryEntries = await Beerentry.app.models.BeerFromBreweryEntry.find({where: {beerId: id}}).catch(err => console.log(err));
+    const beerEntry = await Beerentry.findById(id, {fields: {id: false, timestampCreated: false}}).catch(err => console.error(err));
+    const beerstyleEntries = await Beerentry.app.models.BeerstyleEntry.find({where: {beerId: id}, fields: {id: false}}).catch(err => console.error(err));
+    const beerFromBreweryEntries = await Beerentry.app.models.BeerFromBreweryEntry.find({where: {beerId: id}, fields: {id: false}}).catch(err => console.error(err));
 
     // update beer
-    const existingBeer = await Beerentry.app.models.Beer.findById(activity.beerId).catch(err => console.log(err));
-    beer = await existingBeer.updateAttributes(beerEntry).catch(err => console.log(err));
+    const existingBeer = await Beerentry.app.models.Beer.findById(originalId).catch(err => console.error(err));
+    beer = await existingBeer.updateAttributes(beerEntry.toJSON()).catch(err => console.error(err));
 
     // update related objects
     if (beerstyleEntries.length > 0) {
       // get original beerstyles
-      const beerstyles = Beerentry.app.models.Beerstyle.find({where: {beerId: beer.id}}).catch(err => console.log(err));
+      const beerstyles = Beerentry.app.models.Beerstyle.find({where: {beerId: beer.id}, fields: {id: true}}).catch(err => console.error(err));
 
-      const lengthDiff = beerstyles.length - beerstyleEntries.length;
-      if (lengthDiff > 0) {
-        for (let i = beerstyles.length; i > beerstyleEntries.length; i--) {
-          await Beerentry.app.models.Beerstyle.delete(beerstyles[i - 1].id).catch(err => console.log(err));
-        }
-      }
+      // delete original beerstyles
+      beerstyles.map(async beerstyle => {
+        Beerentry.app.models.Beerstyle.deleteById(beerstyle.id).catch(err => console.error(err));
+      });
 
-      for (let i = 0; i < beerstyleEntries.length; i++) {
-        if (i <= (beerstyles.length - 1)) {
-          beerstyles[i].updateAttributes(beerstyleEntries[i]).catch(err => console.log(err));
-        } else {
-          await Beerentry.app.models.Beerstyle.create(beerstyleEntries[i]).catch(err => console.log(err));
-        }
-      }
+      // create new beerstyles
+      beerstyleEntries.map(async beerstyleEntry => {
+        beerstyleEntry.beerId = beer.id;
+        Beerentry.app.models.Beerstyle.create(beerstyleEntry).catch(err => console.error(err));
+      });
     }
     if (beerFromBreweryEntries.length > 0) {
+      // get original beerFromBreweries
+      const beerFromBreweries = Beerentry.app.models.BeerFromBrewery.find({where: {beerId: beer.id}, fields: {id: true}}).catch(err => console.error(err));
 
+      // delete original beerFromBreweries
+      beerFromBreweries.map(async beerFromBrewery => {
+        Beerentry.app.models.BeerFromBrewery.deleteById(beerFromBrewery.id).catch(err => console.error(err));
+      });
+
+      // create new beerFromBreweries
+      beerFromBreweryEntries.map(async beerFromBreweryEntry => {
+        beerFromBreweryEntry.beerId = beer.id;
+        Beerentry.app.models.BeerFromBrewery.create(beerFromBreweryEntry).catch(err => console.error(err));
+      });
     }
   };
 
   Beerentry.remoteMethod('updateBeer', {
     accepts: [
       {arg: 'id', type: 'number', required: true},
+      {arg: 'originalId', type: 'number', required: true},
     ],
     http: {path: '/:id/updateBeer', verb: 'get'},
     returns: {type: 'object', root: true},

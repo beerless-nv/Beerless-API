@@ -10,21 +10,23 @@ module.exports = function(Beer) {
    */
   Beer.validatesPresenceOf('name', 'ABV');
   Beer.validatesNumericalityOf('ABV', 'IBU', 'EBC', 'temperature', 'since');
-  Beer.validatesUniquenessOf('name');
+  // Beer.validatesUniquenessOf('name');
 
   Beer.observe('after save', async function(ctx, next) {
-    if (ctx.instance) {
+    if (ctx.isNewInstance) {
       // load new beer to ElasticSearch
-      Beer.createBeerEs(ctx.instance.id).catch(err => console.log(err));
+      Beer.createBeerEs(ctx.instance.id).catch(err => console.error(err));
     } else {
       // update beer in ElasticSearch
-      console.log('updated', ctx.where);
+      Beer.updateBeerES(ctx.instance.id).catch(err => console.error(err));
     }
+    next();
   });
 
   Beer.observe('after delete', async function(ctx, next) {
     // delete beer from ElasticSearch
-    console.log('deleted', ctx.where);
+    Beer.deleteBeerEs(ctx.where.id).catch(err => console.error(err));
+    next();
   });
 
   /**
@@ -40,7 +42,7 @@ module.exports = function(Beer) {
       let recommendations = [];
 
       // check if beer exists
-      const beer = await Beer.findById(beerId).catch(err => console.log(err));
+      const beer = await Beer.findById(beerId).catch(err => console.error(err));
       if (!beer) {
         const err = new Error();
         err.statusCode = 404;
@@ -64,7 +66,7 @@ module.exports = function(Beer) {
                   logo: true,
                   description: true,
                 },
-              }).catch(err => console.log(err));
+              }).catch(err => console.error(err));
               if (beer) {
                 // make recommendation objects and add it to the array
                 recommendations.push({
@@ -121,7 +123,7 @@ module.exports = function(Beer) {
     }
 
     //variables
-    const beers = await Beer.find({where: {isApproved: 1}}).catch(err => console.log(err));
+    const beers = await Beer.find({where: {isApproved: 1}}).catch(err => console.error(err));
     const chatbotId = '5c909b61ccc52e00050a6e76';
     const baseUri = 'https://admin-api.oswald.ai/api/v1';
     const entityLabelId = '5cda657629ba2e00052af19e';
@@ -134,7 +136,7 @@ module.exports = function(Beer) {
     };
 
     //get login access token
-    const login = (await axios.post(baseUri + '/users/login', credentials).catch(err => console.log(err)))['data'];
+    const login = (await axios.post(baseUri + '/users/login', credentials).catch(err => console.error(err)))['data'];
 
     //add acces token to options
     const options = {
@@ -178,7 +180,7 @@ module.exports = function(Beer) {
     };
 
     //POST request
-    axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity', body, options).catch(err => console.log(err));
+    axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity', body, options).catch(err => console.error(err));
 
     //Return json data array
     return data;
@@ -206,7 +208,7 @@ module.exports = function(Beer) {
         relation: 'breweries',
         scope: {where: {name: brewery}},
       }, 'styleTags'],
-    }).catch(err => console.log(err))));
+    }).catch(err => console.error(err))));
 
     for (let resultKey in result) {
       if ((result[resultKey]['breweries']).length > 0) {
@@ -252,7 +254,7 @@ module.exports = function(Beer) {
       },
       from: from,
       size: size,
-    }).catch(err => console.log(err));
+    }).catch(err => console.error(err));
 
     return result.body.hits;
   };
@@ -292,7 +294,7 @@ module.exports = function(Beer) {
           },
         },
       },
-    }).catch(err => console.log(err));
+    }).catch(err => console.error(err));
 
     return result.body.suggest['suggest-beer'][0]['options'];
   };
@@ -321,13 +323,10 @@ module.exports = function(Beer) {
             index: 'beers',
             body: beer,
             id: beer.id,
-          }, function(err, resp) {
-            if (err) return false;
-            if (resp) return true;
-          }).catch(err => console.log(err));
+          }).catch(err => console.error(err));
         });
       }
-    }).catch(err => console.log(err));
+    }).catch(err => console.error(err));
   };
 
   Beer.remoteMethod('loadAllBeersToES', {
@@ -351,7 +350,7 @@ module.exports = function(Beer) {
         index: 'beers',
         body: beer,
         id: beer.id,
-      }).catch(err => console.log(err));
+      }).catch(err => console.error(err));
     });
   };
 
@@ -372,8 +371,8 @@ module.exports = function(Beer) {
   Beer.updateBeerES = async function(beerId) {
     if (!beerId) return false;
 
-    await Beer.deleteBeerEs(beerId).catch(err => console.log(err));
-    await Beer.createBeerEs(beerId).catch(err => console.log(err));
+    await Beer.deleteBeerEs(beerId).catch(err => console.error(err));
+    await Beer.createBeerEs(beerId).catch(err => console.error(err));
   };
 
   Beer.remoteMethod('updateBeerES', {
@@ -396,10 +395,7 @@ module.exports = function(Beer) {
     await es.delete({
       index: 'beers',
       id: beerId,
-    }, function(err, resp) {
-      if (err) return false;
-      if (resp) return true;
-    }).catch(err => console.log(err));
+    }).catch(err => console.error(err));
   };
 
   Beer.remoteMethod('deleteBeerEs', {
@@ -420,7 +416,7 @@ module.exports = function(Beer) {
     await es.indices.exists({index: 'beers'}, async function(err, resp) {
       if (resp.statusCode === 200) {
         await es.indices.delete({index: 'beers'}, function(err, resp) {
-        }).catch(err => console.log(err));
+        }).catch(err => console.error(err));
       }
 
       // create new index
@@ -438,11 +434,8 @@ module.exports = function(Beer) {
             },
           },
         },
-      }, async function(err, resp) {
-        if (err) return false;
-        if (resp) return true;
-      }).catch(err => console.log(err));
-    }).catch(err => console.log(err));
+      }).catch(err => console.error(err));
+    }).catch(err => console.error(err));
   };
 
   Beer.remoteMethod('createIndexES', {

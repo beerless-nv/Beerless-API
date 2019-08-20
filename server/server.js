@@ -165,5 +165,5 @@ global.es = new Client({
  *
  */
 process.on('unhandledRejection', function(err) {
-  // console.log(err);
+  // console.error(err);
 });

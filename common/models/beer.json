@@ -4,12 +4,13 @@
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
-    "validateUpsert": true
+    "validateUpsert": false
   },
   "mixins": {
     "TimeStamp": {
       "createdAt": "timestampCreated",
-      "updatedAt": "timestampUpdated"
+      "updatedAt": "timestampUpdated",
+      "validateUpsert": "false"
     },
     "UserRestrictions": {
       "email": true

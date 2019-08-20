@@ -3,8 +3,8 @@
 module.exports = function(Entry) {
   Entry.acceptEntry = async function(id, next) {
     const statusId = 2, current = 1;
-    const entry = await Entry.findById(id, {include: ['beerEntry', 'breweryEntry', 'articleEntry']}).catch(err => console.log(err));
-    const activity = await Entry.app.models.Activity.findById(entry.activityId).catch(err => console.log(err));
+    const entry = await Entry.findById(id, {include: ['beerEntry', 'breweryEntry', 'articleEntry']}).catch(err => console.error(err));
+    const activity = await Entry.app.models.Activity.findById(entry.activityId).catch(err => console.error(err));
 
     // check if entry exists
     if (!entry) {
@@ -20,11 +20,11 @@ module.exports = function(Entry) {
     if (jsonEntry.hasOwnProperty('beerEntry')) {
       let beer;
       if (activity.beerId === 0) {
-        beer = await Entry.app.models.BeerEntry.createBeer(jsonEntry.beerEntry.id).catch(err => console.log(err));
+        beer = await Entry.app.models.BeerEntry.createBeer(jsonEntry.beerEntry.id).catch(err => console.error(err));
+        activity.beerId = beer.id;
       } else {
-        beer = await Entry.app.models.BeerEntry.updateBeer(jsonEntry.beerEntry.id).catch(err => console.log(err));
+        beer = await Entry.app.models.BeerEntry.updateBeer(jsonEntry.beerEntry.id, activity.beerId).catch(err => console.error(err));
       }
-      activity.beerId = beer.id;
     }
 
     if (jsonEntry.hasOwnProperty('breweryEntry')) {
@@ -38,11 +38,11 @@ module.exports = function(Entry) {
     // update entry
     entry.statusId = statusId;
     entry.current = current;
-    entry.updateAttributes(entry).catch(err => console.log(err));
+    entry.updateAttributes(entry).catch(err => console.error(err));
 
     // update activity
     activity.statusId = statusId;
-    activity.updateAttributes(activity).catch(err => console.log(err));
+    activity.updateAttributes(activity).catch(err => console.error(err));
 
     return entry;
   };

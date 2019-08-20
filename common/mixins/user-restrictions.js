@@ -25,8 +25,8 @@ module.exports = function(Model, properties) {
     // if accessToken is present, change role to the role of the user
     if (ctx.req.accessToken) {
       // get role from current user
-      const rolemappingId = (await Model.app.models.RoleMapping.find({where: {principalId: ctx.req.accessToken.userId}}).catch(err => console.log(err)))[0]['roleId'];
-      role = (await Model.app.models.Role.findById(rolemappingId).catch(err => console.log(err)))['name'];
+      const rolemappingId = (await Model.app.models.RoleMapping.find({where: {principalId: ctx.req.accessToken.userId}}).catch(err => console.error(err)))[0]['roleId'];
+      role = (await Model.app.models.Role.findById(rolemappingId).catch(err => console.error(err)))['name'];
     }
 
     if (role !== 'Administrator') {

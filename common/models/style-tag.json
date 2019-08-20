@@ -46,6 +46,16 @@
         "nestRemoting": true
       },
       "through": "Beerstyle"
+    },
+    "beerEntries": {
+      "type": "hasMany",
+      "model": "Beer",
+      "foreignKey": "styleTagId",
+      "keyThrough": "beerId",
+      "options": {
+        "nestRemoting": true
+      },
+      "through": "BeerstyleEntry"
     }
   },
   "acls": [],

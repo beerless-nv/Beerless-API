@@ -10,7 +10,7 @@ module.exports = function(Useridentity) {
     const res = (currentCtx && currentCtx.get('http'))['res'];
 
     // check if a user with this email already exists
-    const user = await Useridentity.app.models.UserFull.find({where: {email: ctx['instance']['profile']['emails'][0]['value']}}).catch(err => console.log(err));
+    const user = await Useridentity.app.models.UserFull.find({where: {email: ctx['instance']['profile']['emails'][0]['value']}}).catch(err => console.error(err));
 
     // stop if email already exists
     if (user.length > 0) {
@@ -74,7 +74,7 @@ module.exports = function(Useridentity) {
     // change user object with social profile information
     Useridentity.app.models.UserFull.upsert(user, {preserveAccessTokens: true}, function(err, result) {
       if (err) {
-        console.log(err);
+        console.error(err);
       }
     });
 

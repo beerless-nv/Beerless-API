@@ -33,7 +33,7 @@ module.exports = function(Article) {
       }
 
       // insert article object in db
-      const article = await Article.create(data).catch(err => console.log(err));
+      const article = await Article.create(data).catch(err => console.error(err));
 
       // add activity for the insert
       const activity = {

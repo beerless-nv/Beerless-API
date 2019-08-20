@@ -28,7 +28,7 @@ module.exports = function (Styletag) {
       return;
     }
     // variables
-    const styletags = await Styletag.find({ where: { isApproved: 1 } }).catch(err => console.log(err));
+    const styletags = await Styletag.find({ where: { isApproved: 1 } }).catch(err => console.error(err));
     const chatbotId = '5c909b61ccc52e00050a6e76';
     const baseUri = 'https://admin-api.oswald.ai/api/v1';
     const entityLabelId = '5cda657629ba2e00052af19f';
@@ -41,7 +41,7 @@ module.exports = function (Styletag) {
     };
 
     //get login access token
-    const login = (await axios.post(baseUri + "/users/login", credentials).catch(err => console.log(err)))['data'];
+    const login = (await axios.post(baseUri + "/users/login", credentials).catch(err => console.error(err)))['data'];
 
 
     //add acces token to options
@@ -87,7 +87,7 @@ module.exports = function (Styletag) {
     };
 
     //POST request
-    axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity', body, options).catch(err => console.log(err));
+    axios.post(baseUri + '/entity-labels/' + entityLabelId + '/load-file-entity', body, options).catch(err => console.error(err));
 
     //Return data
     return data;
