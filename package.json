@@ -50,7 +50,7 @@
     "socket.io": "^2.2.0",
     "solr-node": "^1.2.1",
     "strong-error-handler": "^3.2.0",
-    "swagger-ui": "^3.23.0",
+    "swagger-ui": "^3.23.11",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
